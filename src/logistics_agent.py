@@ -33,7 +33,7 @@ tools_by_name = {tool.name: tool for tool in tools}
 # Bind model with tools
 model = model.bind_tools(tools)
 
-def logistician_agent(state: LogisticsState) -> Command[Literal["__end__", "logistician_tools", "confirm_with_user", "commit_logistics_transaction"]]:
+def logistics_agent(state: LogisticsState) -> Command[Literal["__end__", "logistics_tools", "confirm_with_user", "commit_logistics_transaction"]]:
     """
 
     """
@@ -50,7 +50,7 @@ def logistician_agent(state: LogisticsState) -> Command[Literal["__end__", "logi
 
     if response.tool_calls: # if it needs a tool
         return Command(
-            goto="logistician_tools", 
+            goto="logistics_tools", 
             update={"supervisor_messages": [response]}
         )
     elif response.missing_mandatory_fields: # if there is a missing mandatory fields
@@ -88,7 +88,7 @@ def confirm_with_user(state: LogisticsState) -> Command[Literal["__end__"]]:
         update={"messages": [AIMessage(content=logistician_confirmation_prompt.format(summary=response.content))]}
     )
 
-def logistician_tools(state: LogisticsState):
+def logistics_tools(state: LogisticsState):
     """Execute all tool calls from the previous LLM response.
 
     Executes all tool calls from the previous LLM responses.
@@ -131,14 +131,14 @@ def commit_logistics_transaction(state: LogisticsState):
 logistics_agent_builder = StateGraph(LogisticsState)
 
 # Add workflow nodes
-logistics_agent_builder.add_node("logistician_agent", logistician_agent)
-logistics_agent_builder.add_node("logistician_tools", logistician_tools)
+logistics_agent_builder.add_node("logistics_agent", logistics_agent)
+logistics_agent_builder.add_node("logistics_tools", logistics_tools)
 logistics_agent_builder.add_node("confirm_with_user", confirm_with_user)
 logistics_agent_builder.add_node("commit_logistics_transaction", commit_logistics_transaction)
 
 # Add workflow edges
-logistics_agent_builder.add_edge(START, "logistician_agent")
-logistics_agent_builder.add_edge("logistician_tools", "logistician_agent")
+logistics_agent_builder.add_edge(START, "logistics_agent")
+logistics_agent_builder.add_edge("logistics_tools", "logistics_agent")
 logistics_agent_builder.add_edge("commit_logistics_transaction", END)
 
 # Compile the workflow
