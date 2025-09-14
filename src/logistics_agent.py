@@ -13,7 +13,7 @@ import os
 from src.prompt import missing_mandatory_fields_prompt, missing_optional_fields_prompt, \
                         logistician_confirmation_prompt, logistician_prompt, summarize_logistician_system_prompt, \
                         summarize_logistician_human_prompt
-from src.state_logistician import LogisticianSchema, LogisticianState
+from src.logistics_schema import LogisticsSchema, LogisticsState
 
 # ===== UTILITY FUNCTIONS =====
 
@@ -33,7 +33,7 @@ tools_by_name = {tool.name: tool for tool in tools}
 # Bind model with tools
 model = model.bind_tools(tools)
 
-def logistician_agent(state: LogisticianState) -> Command[Literal["__end__", "logistician_tools", "confirm_with_user", "commit_logistics_transaction"]]:
+def logistician_agent(state: LogisticsState) -> Command[Literal["__end__", "logistician_tools", "confirm_with_user", "commit_logistics_transaction"]]:
     """
 
     """
@@ -76,7 +76,7 @@ def logistician_agent(state: LogisticianState) -> Command[Literal["__end__", "lo
             update={"supervisor_messages": [response]}
         )
 
-def confirm_with_user(state: LogisticianState) -> Command[Literal["__end__"]]: 
+def confirm_with_user(state: LogisticsState) -> Command[Literal["__end__"]]: 
     """In case the logistician needs to confirm something with the user"""
     # first summarize 
     system_message = summarize_logistician_system_prompt.format(date=get_today_str())
@@ -88,7 +88,7 @@ def confirm_with_user(state: LogisticianState) -> Command[Literal["__end__"]]:
         update={"messages": [AIMessage(content=logistician_confirmation_prompt.format(summary=response.content))]}
     )
 
-def logistician_tools(state: LogisticianState):
+def logistician_tools(state: LogisticsState):
     """Execute all tool calls from the previous LLM response.
 
     Executes all tool calls from the previous LLM responses.
@@ -113,7 +113,7 @@ def logistician_tools(state: LogisticianState):
 
     return {"supervisor_messages": tool_outputs}
 
-def commit_logistics_transaction(state: LogisticianState):
+def commit_logistics_transaction(state: LogisticsState):
     """ """
     # get the last response which includes all the filled values after confirmation
     messages = state["supervisor_messages"]
@@ -128,18 +128,18 @@ def commit_logistics_transaction(state: LogisticianState):
     }
 
 # Build the scoping workflow
-logistician_agent_builder = StateGraph(LogisticianState)
+logistics_agent_builder = StateGraph(LogisticsState)
 
 # Add workflow nodes
-logistician_agent_builder.add_node("logistician_agent", logistician_agent)
-logistician_agent_builder.add_node("logistician_tools", logistician_tools)
-logistician_agent_builder.add_node("confirm_with_user", confirm_with_user)
-logistician_agent_builder.add_node("commit_logistics_transaction", commit_logistics_transaction)
+logistics_agent_builder.add_node("logistician_agent", logistician_agent)
+logistics_agent_builder.add_node("logistician_tools", logistician_tools)
+logistics_agent_builder.add_node("confirm_with_user", confirm_with_user)
+logistics_agent_builder.add_node("commit_logistics_transaction", commit_logistics_transaction)
 
 # Add workflow edges
-logistician_agent_builder.add_edge(START, "logistician_agent")
-logistician_agent_builder.add_edge("logistician_tools", "logistician_agent")
-logistician_agent_builder.add_edge("commit_logistics_transaction", END)
+logistics_agent_builder.add_edge(START, "logistician_agent")
+logistics_agent_builder.add_edge("logistician_tools", "logistician_agent")
+logistics_agent_builder.add_edge("commit_logistics_transaction", END)
 
 # Compile the workflow
-logistician_agent = logistician_agent_builder.compile()
+logistics_agent = logistics_agent_builder.compile()

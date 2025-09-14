@@ -1,7 +1,7 @@
 
 """User Clarification and Routimg to Sub Agents.
 
-This module implements the scoping phase of the Routing workflow, where we:
+This module implements the  the Routing workflow, where we:
 1. Assess if the user's data needs clarification
 2. Delegate and route to Sub Agents
 
@@ -19,7 +19,7 @@ from langgraph.types import Command
 from langgraph.checkpoint.memory import InMemorySaver
 
 from src.prompt import decision_to_route_inbound_logistics_tasks
-from src.data_structure import AgentState, ClarifyWithUser, AgentInputState, NextAgent
+from src.supervisor_schema import AgentState, ClarifyWithUser, AgentInputState, NextAgent
 
 checkpointer = InMemorySaver()
 # ===== UTILITY FUNCTIONS =====
@@ -42,7 +42,6 @@ def supervisor_agent(state: AgentState):
     Determine if the user's request contains sufficient information to proceed.
 
     Uses structured output to make deterministic decisions and avoid hallucination.
-    Routes to either next agent or ends with a clarification question.
     """
     # Set up structured output model
     structured_output_model = model.with_structured_output(ClarifyWithUser)
@@ -57,8 +56,8 @@ def supervisor_agent(state: AgentState):
 
     # Route based on clarification need
     return {
-        "full_schema": response,
-        "agent_brief": response.agent_brief,
+        "clarification_schemas" : response,
+        "agent_brief" : response.agent_brief,
         "supervisor_messages": [
             AIMessage(content=response.delegate_to.value)
         ]
@@ -66,9 +65,9 @@ def supervisor_agent(state: AgentState):
 
 def clarify_with_user(state: AgentState):
     """In Case the user needs to be asked a clarifying question."""
-    full_schema = state.get("full_schema")
-    if full_schema and full_schema.question:
-        question = full_schema.question
+    clarification_schemas = state.get("clarification_schemas")
+    if clarification_schemas and clarification_schemas.question:
+        question = clarification_schemas.question
     return {"messages": [AIMessage(content=question)]}
 
 def supervisor_tools(state: AgentState):
@@ -95,30 +94,23 @@ def supervisor_tools(state: AgentState):
     return {"supervisor_messages": tool_outputs}
 
 def delegate_next_agent(state: AgentState) -> Literal["logistician_agent", "clearance_agent", "supervisor_tools", "clarify_with_user"]:
-    """Determine where the control should move next.
-
-    Determines whether the agent should execute the tools,  or provide
-    a final answer based on whether the LLM made tool calls.
-
-    Returns:
-        "tool_node"  : Continue to tool execution
-        "next agent" : Stop and compress research"""
+    """Determine where the task should move next."""
 
     # Then check the routing decision
-    full_schema = state.get("full_schema")
-    if not full_schema:
+    clarification_schemas = state.get("clarification_schemas")
+    if not clarification_schemas:
         return "__end__"
 
-    if full_schema.delegate_to == NextAgent.LOGISTICIAN_AGENT:
+    if clarification_schemas.delegate_to == NextAgent.LOGISTICIAN_AGENT:
         return "logistician_agent"
-    elif full_schema.delegate_to == NextAgent.CLEARANCE_AGENT:
+    elif clarification_schemas.delegate_to == NextAgent.CLEARANCE_AGENT:
         return "clearance_agent"
-    elif full_schema.delegate_to == NextAgent.CLARIFY_WITH_USER:
+    elif clarification_schemas.delegate_to == NextAgent.CLARIFY_WITH_USER:
         return "clarify_with_user"
     else:
         return "__end__"
 
-def logistician_agent(state: AgentState):
+def logistics_agent(state: AgentState):
     pass
 
 def clearance_agent(state: AgentState):
@@ -133,7 +125,7 @@ supervisor_agent_builder = StateGraph(AgentState, input_schema=AgentInputState)
 supervisor_agent_builder.add_node("supervisor_agent", supervisor_agent)
 supervisor_agent_builder.add_node("supervisor_tools", supervisor_tools)
 supervisor_agent_builder.add_node("clarify_with_user", clarify_with_user)
-supervisor_agent_builder.add_node("logistician_agent", logistician_agent)
+supervisor_agent_builder.add_node("logistics_agent", logistics_agent)
 supervisor_agent_builder.add_node("clearance_agent", clearance_agent)
 
 # Add workflow edges
@@ -142,14 +134,14 @@ supervisor_agent_builder.add_conditional_edges(
     "supervisor_agent",
     delegate_next_agent,
     {
-        "supervisor_tools": "supervisor_tools", # execute tools,
-        "clarify_with_user": "clarify_with_user", # Provide final answer
-        "logistician_agent": "logistician_agent",
-         "clearance_agent": "clearance_agent"
+        "supervisor_tools" : "supervisor_tools"  , # execute tools,
+        "clarify_with_user": "clarify_with_user" , # Provide final answer
+        "logistics_agent"  : "logistics_agent" ,
+        "clearance_agent"  : "clearance_agent"
     },
 )
 supervisor_agent_builder.add_edge("supervisor_tools", "supervisor_agent")
 supervisor_agent_builder.add_edge("clarify_with_user", END)
 
 # Compile the workflow
-SupervisorAgent = supervisor_agent_builder.compile()
+SupervisorAgent = supervisor_agent_builder.compile(checkpointer=checkpointer)

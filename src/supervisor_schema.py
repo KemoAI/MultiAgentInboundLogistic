@@ -1,8 +1,8 @@
 
-"""State Definitions and Pydantic Schemas for Routing Workflow.
+"""Supervisor Definitions and Pydantic Schemas for Routing Workflow.
 
-This defines the state objects and structured schemas used for
-Routing to sub agent sworkflow, including researcher state management and output schemas.
+This defines the state objects and structured schemas used for Routing to 
+sub agent sworkflow, including Supervisor state management and output schemas.
 """
 
 import operator
@@ -18,9 +18,10 @@ from enum import Enum
 
 class NextAgent(str, Enum):
     END = "__end__"
+    CLARIFY_WITH_USER = "clarify_with_user"
     LOGISTICIAN_AGENT = "logistician_agent"
-    CLEARANCE_AGENT  = "clearance_agent"
-    supervisor_tools_AGENT = "supervisor_tools"
+    CLEARANCE_AGENT   = "clearance_agent"
+    SUPERVISOR_TOOLS  = "supervisor_tools"
 
 class ClarifyWithUser(BaseModel):
     """Schema for delegation decision and questions."""
@@ -40,13 +41,11 @@ class AgentInputState(MessagesState):
 
 class AgentState(MessagesState):
     """
-    Main state for the full multi-agent research system.
+    Main state for the full multi-agent system.
 
     Extends MessagesState with additional fields for routing coordination.
-    Note: Some fields are duplicated across different state classes for proper
-    state management between subgraphs and the main workflow.
     """
 
     supervisor_messages: Annotated[Sequence[BaseMessage], add_messages]
+    clarification_schemas: Optional[ClarifyWithUser] = None
     agent_brief: str
-    full_schema: Optional[ClarifyWithUser] = None
