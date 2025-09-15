@@ -46,10 +46,10 @@ Keep the verification message professional and concise, e.g.,
 
 """
 
-logistician_prompt = """ """
+logistics_prompt = """ """
 missing_mandatory_fields_prompt = """ """
 missing_optional_fields_prompt = """ """
-logistician_confirmation_prompt = """ """
-summarize_logistician_system_prompt = """ """ # ref compress_research_system_prompt
-summarize_logistician_human_prompt = """ """  # ref compress_research_human_message
+logistics_confirmation_prompt = """ """
+summarize_logistics_system_prompt = """ """ # ref compress_research_system_prompt
+summarize_logistics_human_prompt = """ """  # ref compress_research_human_message
 clearing_prompt = """ """

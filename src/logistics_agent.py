@@ -11,8 +11,8 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.types import Command
 import os
 from src.prompt import missing_mandatory_fields_prompt, missing_optional_fields_prompt, \
-                        logistician_confirmation_prompt, logistician_prompt, summarize_logistician_system_prompt, \
-                        summarize_logistician_human_prompt
+                        logistics_confirmation_prompt, logistics_prompt, summarize_logistics_system_prompt, \
+                        summarize_logistics_human_prompt
 from src.logistics_schema import LogisticsSchema, LogisticsState
 
 # ===== UTILITY FUNCTIONS =====
@@ -43,7 +43,7 @@ def logistics_agent(state: LogisticsState) -> Command[Literal["__end__", "logist
     # Invoke the model with clarification instructions
     response = structured_output_model.invoke([
         HumanMessage(content=logistician_prompt.format(
-            agent_brief=state["supervisor_messages"][-1].agent_brief, 
+            agent_brief=state["agent_brief"], 
             date=get_today_str()
         ))
     ])
@@ -79,13 +79,13 @@ def logistics_agent(state: LogisticsState) -> Command[Literal["__end__", "logist
 def confirm_with_user(state: LogisticsState) -> Command[Literal["__end__"]]: 
     """In case the logistician needs to confirm something with the user"""
     # first summarize 
-    system_message = summarize_logistician_system_prompt.format(date=get_today_str())
-    messages = [SystemMessage(content=system_message)] + state.get("supervisor_messages", []) + [HumanMessage(content=summarize_logistician_human_prompt)]
+    system_message = summarize_logistics_system_prompt.format(date=get_today_str())
+    messages = [SystemMessage(content=system_message)] + state.get("supervisor_messages", []) + [HumanMessage(content=summarize_logistics_human_prompt)]
     response = summarize_model.invoke(messages)
     # Print the summary requesting confirmation
     return Command(
         goto=END, 
-        update={"messages": [AIMessage(content=logistician_confirmation_prompt.format(summary=response.content))]}
+        update={"messages": [AIMessage(content=logistics_confirmation_prompt.format(summary=response.content))]}
     )
 
 def logistics_tools(state: LogisticsState):

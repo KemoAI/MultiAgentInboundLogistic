@@ -13,14 +13,14 @@ from langchain_core.messages import BaseMessage
 from langgraph.graph import MessagesState
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field
+from src.supervisor_schema import AgentState
 from enum import Enum
 
 # ===== STATE DEFINITIONS =====
 
-class LogisticsState(MessagesState):
+class LogisticsState(AgentState):
     """State for the logistician agent"""
-    supervisor_messages: Annotated[Sequence[BaseMessage], add_messages]
-    agent_brief: str
+    pass
 
 # ===== STRUCTURED OUTPUT SCHEMAS =====
 
