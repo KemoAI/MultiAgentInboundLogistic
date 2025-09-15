@@ -1,0 +1,27 @@
+{
+    "logistics_agent" : [
+                         {
+                           "field": "AWB#",
+                           "dataType": "String",
+                           "description": "The unique Air Waybill number for the shipment."
+                         },
+                         {
+                            "field": "AWB Date",
+                            "dataType": "Date",
+                            "description": "The issuance date of the Air Waybill (YYYY-MM-DD)."
+                         }
+                        ],
+    "clearance_agent" : [
+                         {
+                            "field": "ATA",
+                            "dataType": "DateTime",
+                            "description": "Actual Time of Arrival of the shipment at the port."
+                         },
+                         {
+                            "field": "Clearance Date",
+                            "dataType": "Date",
+                            "description": "The date customs clearance was completed."
+                         }
+                        ]
+
+}

@@ -9,6 +9,7 @@ The workflow uses structured output to make deterministic decisions about
 whether sufficient context exists to proceed with Routing.
 """
 
+import json
 from datetime import datetime
 from typing_extensions import Literal
 
@@ -22,21 +23,27 @@ from src.prompt import decision_to_route_inbound_logistics_tasks
 from src.supervisor_schema import AgentState, ClarifyWithUser, AgentInputState, NextAgent
 
 checkpointer = InMemorySaver()
-# ===== UTILITY FUNCTIONS =====
 
+
+# ===== IBL FIELDS =====
+try:
+    with open ("../config.json" , "r") as config_file:
+        routing_fields = json.load(config_file)
+except FileNotFoundError:
+    print("Error: config.json not found. Please create it.")
+
+# ===== UTILITY FUNCTIONS =====
 def get_today_str() -> str:
     """Get current date in a human-readable format."""
     return datetime.now().strftime("%a %b %#d, %Y")
 
-# ===== CONFIGURATION =====
-
 # Initialize model
 model = init_chat_model(model="openai:gpt-4.1", temperature=0.0)
+
 tools = []
 tools_by_name = {tool.name: tool for tool in tools}
 
 # ===== WORKFLOW NODES =====
-
 def supervisor_agent(state: AgentState):
     """
     Determine if the user's request contains sufficient information to proceed.
@@ -50,17 +57,19 @@ def supervisor_agent(state: AgentState):
     response = structured_output_model.invoke([
         HumanMessage(content=decision_to_route_inbound_logistics_tasks.format(
             message=get_buffer_string(messages=state["messages"]), 
-            date=get_today_str()
+            date=get_today_str(),
+            logistics_fields=routing_fields.get("logistics_agent"),
+            clearance_fields=routing_fields.get("clearance_agent")
         ))
     ])
 
     # Route based on clarification need
     return {
-            "clarification_schemas" : response,
-            "agent_brief" : response.agent_brief,
-            "supervisor_messages": [
-            AIMessage(content=response.delegate_to.value)
-            ]
+             "clarification_schemas" : response,
+             "agent_brief" : response.agent_brief,
+             "supervisor_messages": [
+                                    AIMessage(content=response.delegate_to.value)
+                                    ]
            }
 
 def clarify_with_user(state: AgentState):
