@@ -19,7 +19,7 @@ from enum import Enum
 class NextAgent(str, Enum):
     END = "__end__"
     CLARIFY_WITH_USER = "clarify_with_user"
-    LOGISTICIAN_AGENT = "logistician_agent"
+    LOGISTICS_AGENT   = "logistics_agent"
     CLEARANCE_AGENT   = "clearance_agent"
     SUPERVISOR_TOOLS  = "supervisor_tools"
 

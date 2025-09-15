@@ -56,12 +56,12 @@ def supervisor_agent(state: AgentState):
 
     # Route based on clarification need
     return {
-        "clarification_schemas" : response,
-        "agent_brief" : response.agent_brief,
-        "supervisor_messages": [
+            "clarification_schemas" : response,
+            "agent_brief" : response.agent_brief,
+            "supervisor_messages": [
             AIMessage(content=response.delegate_to.value)
-        ]
-    }
+            ]
+           }
 
 def clarify_with_user(state: AgentState):
     """In Case the user needs to be asked a clarifying question."""
@@ -93,7 +93,7 @@ def supervisor_tools(state: AgentState):
 
     return {"supervisor_messages": tool_outputs}
 
-def delegate_next_agent(state: AgentState) -> Literal["logistician_agent", "clearance_agent", "supervisor_tools", "clarify_with_user"]:
+def delegate_next_agent(state: AgentState) -> Literal["logistics_agent", "clearance_agent", "supervisor_tools", "clarify_with_user"]:
     """Determine where the task should move next."""
 
     # Then check the routing decision
@@ -101,8 +101,8 @@ def delegate_next_agent(state: AgentState) -> Literal["logistician_agent", "clea
     if not clarification_schemas:
         return "__end__"
 
-    if clarification_schemas.delegate_to == NextAgent.LOGISTICIAN_AGENT:
-        return "logistician_agent"
+    if clarification_schemas.delegate_to == NextAgent.LOGISTICS_AGENT:
+        return "logistics_agent"
     elif clarification_schemas.delegate_to == NextAgent.CLEARANCE_AGENT:
         return "clearance_agent"
     elif clarification_schemas.delegate_to == NextAgent.CLARIFY_WITH_USER:
@@ -144,4 +144,4 @@ supervisor_agent_builder.add_edge("supervisor_tools", "supervisor_agent")
 supervisor_agent_builder.add_edge("clarify_with_user", END)
 
 # Compile the workflow
-SupervisorAgent = supervisor_agent_builder.compile(checkpointer=checkpointer)
+SupervisorAgent = supervisor_agent_builder.compile(checkpointer = checkpointer)
