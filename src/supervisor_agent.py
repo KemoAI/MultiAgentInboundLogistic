@@ -20,7 +20,7 @@ from langgraph.types import Command
 from langgraph.checkpoint.memory import InMemorySaver
 
 from src.prompt import decision_to_route_inbound_logistics_tasks
-from src.supervisor_schema import AgentState, ClarifyWithUser, AgentInputState, NextAgent
+from src.supervisor_schema import AgentState, ClarifyWithUser, AgentInputState, NextAgent , think_tool
 
 checkpointer = InMemorySaver()
 
@@ -37,11 +37,14 @@ def get_today_str() -> str:
     """Get current date in a human-readable format."""
     return datetime.now().strftime("%a %b %#d, %Y")
 
+# Set up tools and model binding
+tools = [think_tool]
+tools_by_name = {tool.name: tool for tool in tools}
+
 # Initialize model
 model = init_chat_model(model="openai:gpt-4.1", temperature=0.0)
+model_with_tools = model.bind_tools(tools)
 
-tools = []
-tools_by_name = {tool.name: tool for tool in tools}
 
 # ===== WORKFLOW NODES =====
 def supervisor_agent(state: AgentState):
@@ -51,7 +54,7 @@ def supervisor_agent(state: AgentState):
     Uses structured output to make deterministic decisions and avoid hallucination.
     """
     # Set up structured output model
-    structured_output_model = model.with_structured_output(ClarifyWithUser)
+    structured_output_model = model_with_tools.with_structured_output(ClarifyWithUser)
 
     # Invoke the model with clarification instructions
     response = structured_output_model.invoke([

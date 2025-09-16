@@ -139,6 +139,7 @@ logistics_agent_builder.add_node("commit_logistics_transaction", commit_logistic
 # Add workflow edges
 logistics_agent_builder.add_edge(START, "logistics_agent")
 logistics_agent_builder.add_edge("logistics_tools", "logistics_agent")
+logistics_agent_builder.add_edge("confirm_with_user", END)
 logistics_agent_builder.add_edge("commit_logistics_transaction", END)
 
 # Compile the workflow

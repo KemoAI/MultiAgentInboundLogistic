@@ -25,8 +25,8 @@ full_agent_builder.add_conditional_edges(
     "supervisor_agent",
     delegate_next_agent,
     {
-        "supervisor_tools"  : "supervisor_tools", # execute tools,
-        "clarify_with_user" : "clarify_with_user", # Send something to the user requesting info or something
+        "supervisor_tools"  : "supervisor_tools", 
+        "clarify_with_user" : "clarify_with_user", 
         "logistics_agent"   : "logistics_agent"
     },
 )
