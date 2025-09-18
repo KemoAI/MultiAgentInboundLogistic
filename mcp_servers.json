@@ -1,0 +1,7 @@
+{
+    "db-server": {
+        "command": "python",
+        "args": ["../src/IBL_DataBase.py"],
+        "transport": "stdio"
+    }
+}

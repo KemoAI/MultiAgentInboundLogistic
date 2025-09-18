@@ -7,11 +7,8 @@ langchain-community
 langchain-tavily
 langgraph
 transformers
-duckduckgo-mcp-server
 fastapi[standard]
 pydantic
 uvicorn
 rich
 mcp
-mcp-use
-mcp[cli]

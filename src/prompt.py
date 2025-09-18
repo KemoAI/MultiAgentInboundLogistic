@@ -102,11 +102,11 @@ Your responsibilities are:
   - Use full descriptive text if available, without truncation
 - **Field Name Flexibility** - Support variations in field names. e.g, "AWB", "AWB Number", "Air Waybill" → all map to AWB
 - **Ambiguous Information** - f the data is unclear, inconsistent, or cannot be reliably determined, set the field to null (None in Python)
-<\Data Extraction Guidelines>
+</Data Extraction Guidelines>
 
 Behaviors:
 **Example 1 - Missing Mandatory Fields:**
-agent_brief : "The input data includes AWB_BL 12345" 
+agent_brief: "The input data includes AWB_BL 12345" 
 - missing_mandatory_fields: ["Shipment_Mode"]
 - missing_optional_fields: ["Product_Temperature"]
 - needs_user_confirmation: True
@@ -115,53 +115,55 @@ agent_brief : "The input data includes AWB_BL 12345"
 - Product_Temperature: null
 - Shipment_Mode: null
 
-**Example 2 - Complete Data, Needs Confirmation:**
-agent_brief : "The input data includes AWB_BL 12345" 
+**Example 2 - Complete Mandatory Data, Needs Optional Confirmation:**
+agent_brief: "The input data includes AWB: ABC123456, Shipment mode: Air" 
 - missing_mandatory_fields: []
 - missing_optional_fields: ["Product_Temperature"]
 - needs_user_confirmation: True
 - ask_for_optional_fields: True
 - AWB_BL: "ABC123456"
-- product_temperature: "2-8°C cold chain"
-- shipment_mode: "Air"
+- Product_Temperature: null
+- Shipment_Mode: "Air"
 
-**Example 3 - User Confirmation:**
-agent_brief : "The input data includes AWB_BL 12345" 
+**Example 3 - After User Confirmation Before Submision:**
+agent_brief: "The input data includes AWB: ABC123456, Shipment mode: Air, and the user confirms to skip the optional fields and requests to proceed to submit the record with AWB ABC123456" 
 - missing_mandatory_fields: []
-- missing_optional_fields: ["handover_to_clearance"]
+- missing_optional_fields: ["Product_Temperature"]
 - needs_user_confirmation: False
 - ask_for_optional_fields: False
 - AWB_BL: "ABC123456"
-- Product_Temperature: "2-8°C cold chain"
-- shipment_Mode: "Air"
+- Product_Temperature: null
+- Shipment_Mode: "Air"
 
 **Example 4 - User Skips Optional Fields:**
-agent_brief : "The input data includes AWB_BL 12345" 
+agent_brief: "User wants to skip optional fields and proceed with AWB: XYZ789012, Mode: Sea" 
 - missing_mandatory_fields: []
-- missing_optional_fields: ["handover_to_clearance"]
+- missing_optional_fields: ["Product_Temperature"]
 - needs_user_confirmation: True
 - ask_for_optional_fields: False
-- AWB: "XYZ789012"
-- product_temperature: "Ambient"
-- shipment_mode: "Sea"
+- AWB_BL: "XYZ789012"
+- Product_Temperature: null
+- Shipment_Mode: "Sea"
 
-**Example 5 - Optional Field Provided (New Data):**
+**Example 5 - Optional Field Provided From Start:**
+agent_brief: "AWB_BL: XYZ789012, Temperature: 2-8°C cold chain, Mode: Sea" 
 - missing_mandatory_fields: []
 - missing_optional_fields: []
 - needs_user_confirmation: True
-- ask_for_optional_fields: True
-- AWB: "XYZ789012"
-- product_temperature: "Ambient"
-- shipment_mode: "Sea freight"
+- ask_for_optional_fields: False            (no missing optional fields)
+- AWB_BL: "XYZ789012"
+- Product_Temperature: "2-8°C cold chain"
+- Shipment_Mode: "Sea"
 
 **Example 6 - User Modifies Existing Data:**
+agent_brief: "The input says AWB_BL: XYZ789012, and requests to change the Mode from Air to Sea" 
 - missing_mandatory_fields: []
-- missing_optional_fields: ["handover_to_clearance"]
+- missing_optional_fields: ["Product_Temperature"]
 - needs_user_confirmation: True
 - ask_for_optional_fields: True             (reset to True due to modification)
-- AWB: "DEF789123"
-- product_temperature: "2-8°C cold chain"   (preserved from previous)
-- shipment_mode: "Air freight"              (preserved from previous)
+- AWB_BL: "DEF789123"
+- Product_Temperature: null
+- Shipment_Mode: "Sea"
 
 **Important Notes:**
 - Always prioritize data accuracy over completion
@@ -172,6 +174,7 @@ agent_brief : "The input data includes AWB_BL 12345"
 - Remember to reset `ask_for_optional_fields` to `True` whenever user provides new or modified data
 
 Now analyze the current logistics data and populate the LogisticsSchema accordingly.
+
 """
 missing_mandatory_fields_prompt = """
 ⚠️ **Missing Required Information**

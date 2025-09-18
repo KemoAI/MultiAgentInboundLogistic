@@ -14,6 +14,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from src.prompt import missing_mandatory_fields_prompt, missing_optional_fields_prompt, \
                         logistics_confirmation_prompt, logistics_agent_tasks
 from src.logistics_schema import LogisticsSchema, LogisticsState
+from langchain_mcp_adapters.client import MultiServerMCPClient
 
 # ===== UTILITY FUNCTIONS =====
 
@@ -37,22 +38,36 @@ optional_fields = [
     item['field'] for item in logistics_schema_fields if item.get('required') is False
 ]
 
-def get_selected_field_details(all_fields, selected_fields):
+def get_selected_field_details(all_fields, missed_fields):
     """
     """
-    return [ detail for detail in all_details if detail['field'] in selected_fields]
+    return [ fields for fields in all_fields if fields['field'] in missed_fields]
+
+# ===== MCP Configuration =====
+mcp_config = None
+
+try:
+    with open ("../mcp_servers.json" , "r") as mcp_file:
+        mcp_config = json.load(mcp_file)
+except FileNotFoundError:
+    print("Error: mcp_servers.json not found. Please create it.")
+    exit()
+
+# Global client variable - will be initialized lazily
+_client = None
+
+def get_mcp_client():
+    """Get or initialize MCP client lazily to avoid issues with LangGraph Platform."""
+    global _client
+    if _client is None:
+        _client = MultiServerMCPClient(mcp_config)
+    return _client
 
 # ===== CONFIGURATION =====
 
 # Initialize model
 model = init_chat_model(model="openai:gpt-4.1", temperature=0.0)
 summarize_model = model
-
-tools = []
-tools_by_name = {tool.name: tool for tool in tools}
-
-# Bind model with tools
-model = model.bind_tools(tools)
 
 def logistics_agent(state: LogisticsState) -> Command[Literal["logistics_tools", "ConfirmWithUser", "CommitLogisticsTransaction" , "__end__"]]:
     """
@@ -65,7 +80,7 @@ def logistics_agent(state: LogisticsState) -> Command[Literal["logistics_tools",
     # Invoke the model
     response = structured_output_model.invoke([
                HumanMessage(content=logistics_agent_tasks.format(
-                                    agent_brief = get_buffer_string(state["agent_brief"]), 
+                                    agent_brief = state["agent_brief"], 
                                     date = get_today_str(),
                                     fields_details=logistics_schema_fields,
                                     mandatory_fields=mandatory_fields,
@@ -76,20 +91,20 @@ def logistics_agent(state: LogisticsState) -> Command[Literal["logistics_tools",
     if response.missing_mandatory_fields:        # missing mandatory fields
         return Command(
                goto=END, 
-               update={"messages": [AIMessage(content=missing_mandatory_fields_prompt.format(
-                                                     missing_fields = response.missing_mandatory_fields,
-                                                     missing_field_details = get_selected_field_details(all_fields = logistics_schema_fields,
-                                                                                                        selected_fields = response.missing_mandatory_fields))
-                                                     )]}
+               update={"messages": model.invoke([AIMessage(content=missing_mandatory_fields_prompt.format(
+                                                           missing_fields = response.missing_mandatory_fields,
+                                                           missing_field_details = get_selected_field_details(all_fields = logistics_schema_fields,
+                                                                                                              missed_fields = response.missing_mandatory_fields))
+                                                     )])}
         )
     elif response.missing_optional_fields and response.ask_for_optional_fields: # missing optional fields before confirmation
         return Command(
                goto=END, 
-               update={"messages": [AIMessage(content=missing_optional_fields_prompt.format(
-                                              missing_fields = response.missing_optional_fields,
-                                              missing_field_details = get_selected_field_details(all_fields = logistics_schema_fields,
-                                                                                                 selected_fields = response.missing_optional_fields))
-                                                     )]}
+               update={"messages": model.invoke([AIMessage(content=missing_optional_fields_prompt.format(
+                                                           missing_fields = response.missing_optional_fields,
+                                                           missing_field_details = get_selected_field_details(all_fields = logistics_schema_fields,
+                                                                                                              missed_fields = response.missing_optional_fields))
+                                                     )])}
         )
     elif response.needs_user_confirmation: # missing confirmation
         return Command(
@@ -111,7 +126,7 @@ def ConfirmWithUser(state: LogisticsState) -> Command[Literal["__end__"]]:
     # Print the summary requesting confirmation
     return Command(
            goto=END, 
-           update={"messages": [AIMessage(content=logistics_confirmation_prompt.format(information_report=state["agent_response"].model_dump()))]}
+           update={"messages": model.invoke([AIMessage(content=logistics_confirmation_prompt.format(information_report=state["agent_response"].model_dump()))])}
     )
 
 def logistics_tools(state: LogisticsState):
@@ -138,8 +153,17 @@ def logistics_tools(state: LogisticsState):
 
     return {"supervisor_messages": tool_outputs}
 
-def CommitLogisticsTransaction(state: LogisticsState):
+async def CommitLogisticsTransaction(state: LogisticsState):
     """ Following the user's confirmation, the logistics database will be updated with the received data """
+
+    # Get available tools from MCP server
+    client = get_mcp_client()
+    tools = await client.get_tools()
+    tools_by_name = {tool.name: tool for tool in tools}
+
+    # Get the update database tool
+    UpdateDB = tools_by_name["UpdateDB"]
+
     # get the last response which includes all the filled values after confirmation
     response = state["agent_response"]
 
@@ -148,7 +172,7 @@ def CommitLogisticsTransaction(state: LogisticsState):
     response_dict = {k:v for (k,v) in response_dict.items() if k not in ["missing_mandatory_fields", "missing_optional_fields",
                                                                          "ask_for_optional_fields", "needs_user_confirmation"]}
     # commit the logistics transactions following the confirmation
-    confirmation_result = UpdateDB.invoke({"record": response_dict})
+    confirmation_result = await UpdateDB.ainvoke({"record": response_dict})
 
     return{
             "messages": [AIMessage(content=f"{confirmation_result}")]     # confirm back
