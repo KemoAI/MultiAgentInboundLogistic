@@ -1,0 +1,22 @@
+{
+    "logistics_schema" : [
+                         {
+                           "field": "AWB_BL",
+                           "dataType": "String",
+                           "description": "The unique Air Waybill or Bill of Lading number for the shipment.",
+						          "required": true
+                         },
+						       {
+                            "field": "Product Temperature",
+                            "dataType": "String",
+                            "description": "Temperature description",
+                            "required": false
+                         },
+						       {
+                            "field": "Shipment Mode",
+                            "dataType": "String",
+                            "description": "shipment mode like air etc",
+                            "required": true
+                         }
+                        ]
+}

@@ -19,8 +19,8 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.types import Command
 from langgraph.checkpoint.memory import InMemorySaver
 
-from src.prompt import decision_to_route_inbound_logistics_tasks
-from src.supervisor_schema import AgentState, ClarifyWithUser, AgentInputState, NextAgent , think_tool
+from src.prompt import supervisor_decision_to_route_to_subagents
+from src.supervisor_schema import AgentState, ClarifyWithUser, AgentInputState, NextAgent
 
 checkpointer = InMemorySaver()
 
@@ -38,7 +38,7 @@ def get_today_str() -> str:
     return datetime.now().strftime("%a %b %#d, %Y")
 
 # Set up tools and model binding
-tools = [think_tool]
+tools = []
 tools_by_name = {tool.name: tool for tool in tools}
 
 # Initialize model
@@ -49,20 +49,19 @@ model_with_tools = model.bind_tools(tools)
 # ===== WORKFLOW NODES =====
 def supervisor_agent(state: AgentState):
     """
-    Determine if the user's request contains sufficient information to proceed.
-
-    Uses structured output to make deterministic decisions and avoid hallucination.
+        Supervisor Agent determines if the input data sufficient to make 
+        deterministic decisions and assign the task to the next agent.
     """
     # Set up structured output model
     structured_output_model = model_with_tools.with_structured_output(ClarifyWithUser)
 
     # Invoke the model with clarification instructions
     response = structured_output_model.invoke([
-        HumanMessage(content=decision_to_route_inbound_logistics_tasks.format(
+        HumanMessage(content=supervisor_decision_to_route_to_subagents.format(
             message=get_buffer_string(messages=state["messages"]), 
             date=get_today_str(),
             logistics_fields=routing_fields.get("logistics_agent"),
-            clearance_fields=routing_fields.get("clearance_agent")
+            forwarder_fields=routing_fields.get("forwarder_agent")
         ))
     ])
 
@@ -75,16 +74,10 @@ def supervisor_agent(state: AgentState):
                                     ]
            }
 
-def clarify_with_user(state: AgentState):
-    """In Case the user needs to be asked a clarifying question."""
-    clarification_schemas = state.get("clarification_schemas")
-    if clarification_schemas and clarification_schemas.question:
-        question = clarification_schemas.question
-    return {"messages": [AIMessage(content=question)]}
-
 def supervisor_tools(state: AgentState):
-    """Executes all tool calls from the previous LLM responses.
-       Returns updated state with tool execution results.
+    """
+        Executes all tool calls from the Supervisor Agent response.
+        Returns updated state with tool execution results.
     """
     tool_calls = state["supervisor_messages"][-1].tool_calls
 
@@ -105,8 +98,19 @@ def supervisor_tools(state: AgentState):
 
     return {"supervisor_messages": tool_outputs}
 
-def delegate_next_agent(state: AgentState) -> Literal["logistics_agent", "clearance_agent", "supervisor_tools", "clarify_with_user"]:
-    """Determine where the task should move next."""
+def clarify_with_user(state: AgentState):
+    """In Case the user needs to be asked a clarifying question."""
+    clarification_schemas = state.get("clarification_schemas")
+    if clarification_schemas and clarification_schemas.question:
+        question = clarification_schemas.question
+    return {"messages": [AIMessage(content=question)]}
+
+def DelegateNextAgent(state: AgentState) -> Literal["logistics_agent", "forwarder_agent", "supervisor_tools", "clarify_with_user"]:
+
+    """ 
+        A routing logic that uses the supervisor agent's responses to determine 
+        which agent should be assigned the task next 
+    """
 
     # Then check the routing decision
     clarification_schemas = state.get("clarification_schemas")
@@ -115,8 +119,8 @@ def delegate_next_agent(state: AgentState) -> Literal["logistics_agent", "cleara
 
     if clarification_schemas.delegate_to == NextAgent.LOGISTICS_AGENT:
         return "logistics_agent"
-    elif clarification_schemas.delegate_to == NextAgent.CLEARANCE_AGENT:
-        return "clearance_agent"
+    elif clarification_schemas.delegate_to == NextAgent.FORWARDER_AGENT:
+        return "forwarder_agent"
     elif clarification_schemas.delegate_to == NextAgent.CLARIFY_WITH_USER:
         return "clarify_with_user"
     else:
@@ -125,7 +129,7 @@ def delegate_next_agent(state: AgentState) -> Literal["logistics_agent", "cleara
 def logistics_agent(state: AgentState):
     pass
 
-def clearance_agent(state: AgentState):
+def forwarder_agent(state: AgentState):
     pass
 
 # ===== GRAPH CONSTRUCTION =====
@@ -138,18 +142,18 @@ supervisor_agent_builder.add_node("supervisor_agent", supervisor_agent)
 supervisor_agent_builder.add_node("supervisor_tools", supervisor_tools)
 supervisor_agent_builder.add_node("clarify_with_user", clarify_with_user)
 supervisor_agent_builder.add_node("logistics_agent", logistics_agent)
-supervisor_agent_builder.add_node("clearance_agent", clearance_agent)
+supervisor_agent_builder.add_node("forwarder_agent", forwarder_agent)
 
 # Add workflow edges
 supervisor_agent_builder.add_edge(START, "supervisor_agent")
 supervisor_agent_builder.add_conditional_edges(
     "supervisor_agent",
-    delegate_next_agent,
+     DelegateNextAgent,
     {
         "supervisor_tools" : "supervisor_tools"  , # execute tools,
         "clarify_with_user": "clarify_with_user" , # Provide final answer
         "logistics_agent"  : "logistics_agent" ,
-        "clearance_agent"  : "clearance_agent"
+        "forwarder_agent"  : "forwarder_agent"
     },
 )
 supervisor_agent_builder.add_edge("supervisor_tools", "supervisor_agent")

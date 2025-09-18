@@ -1,27 +1,216 @@
 {
     "logistics_agent" : [
                          {
-                           "field": "AWB#",
+                           "field": "AWB/BL",
                            "dataType": "String",
-                           "description": "The unique Air Waybill number for the shipment."
+                           "description": "The unique Air Waybill or Bill of Lading number for the shipment.",
+                           "seededValues": {}
                          },
                          {
-                            "field": "AWB Date",
+                            "field": "AWB/BL Date",
                             "dataType": "Date",
-                            "description": "The issuance date of the Air Waybill (YYYY-MM-DD)."
-                         }
+                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "seededValues": {}
+                         },
+                         {
+                            "field": "Forwarder",
+                            "dataType": "String",
+                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "seededValues": {}
+                         },
+                         {
+                            "field": "Incoterm",
+                            "dataType": "String",
+                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "seededValues": {}
+                         },
+                         {
+                            "field": "Product Temperature",
+                            "dataType": "String",
+                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "seededValues": {}
+                         },
+                         {
+                            "field": "Packing",
+                            "dataType": "String",
+                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "seededValues": {}
+                          },
+                          {
+                            "field": "Shipping Temp",
+                            "dataType": "String",
+                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "seededValues": {}
+                          },
+                          {
+                            "field": "Gel Pack Expiry Date",
+                            "dataType": "Date",
+                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "seededValues": {}
+                          },
+                          {
+                            "field": "Handover to Clearance",
+                            "dataType": "Date",
+                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "seededValues": {}
+                          },
+                          {
+                            "field": "Aggregation",
+                            "dataType": "String",
+                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "seededValues": {}
+                          },
+                          {
+                            "field": "Notified FF Date",
+                            "dataType": "Date",
+                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "seededValues": {}
+                          },
+                          {
+                            "field": "Green light - Date",
+                            "dataType": "Date",
+                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "seededValues": {}
+                          },
+                          {
+                            "field": "Shipment Mode",
+                            "dataType": "String",
+                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "seededValues": {}
+                           },
+                           {
+                            "field": "Logistic Comment",
+                            "dataType": "String",
+                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "seededValues": {}
+                           },
+                           {
+                            "field": "Remark",
+                            "dataType": "String",
+                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "seededValues": {}
+                           },
+                           {
+                            "field": "ASN Importation Date",
+                            "dataType": "Date",
+                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "seededValues": {}
+                           }
                         ],
-    "clearance_agent" : [
+    "forwarder_agent" : [
                          {
-                            "field": "ATA",
-                            "dataType": "DateTime",
-                            "description": "Actual Time of Arrival of the shipment at the port."
+                            "field": "Shipment Readiness Date",
+                            "dataType": "Date",
+                            "description": "Actual Time of Arrival of the shipment at the port.",
+                            "seededValues": {}
                          },
                          {
-                            "field": "Clearance Date",
+                            "field": "Pick Up Date",
                             "dataType": "Date",
-                            "description": "The date customs clearance was completed."
-                         }
+                            "description": "Actual Time of Arrival of the shipment at the port.",
+                            "seededValues": {}
+                         },
+                         {
+                            "field": "No. of Pallets",
+                            "dataType": "String",
+                            "description": "Actual Time of Arrival of the shipment at the port.",
+                            "seededValues": {}
+                         },
+                         {
+                            "field": "No.of Containers",
+                            "dataType": "String",
+                            "description": "Actual Time of Arrival of the shipment at the port.",
+                            "seededValues": {}
+                         },
+                         {
+                            "field": "Commodity Description",
+                            "dataType": "String",
+                            "description": "Actual Time of Arrival of the shipment at the port.",
+                            "seededValues": {}
+                         },
+                         {
+                            "field": "Country Of Origin",
+                            "dataType": "String",
+                            "description": "The date customs clearance was completed.",
+                            "seededValues": {}
+                         },
+                                                  {
+                            "field": "AirPort/SeaPort name",
+                            "dataType": "String",
+                            "description": "The date customs clearance was completed.",
+                            "seededValues": {}
+                         },
+                         {
+                            "field": "Shipping Line/Airline",
+                            "dataType": "String",
+                            "description": "The date customs clearance was completed.",
+                            "seededValues": {}
+                         },
+                         {
+                            "field": "Port Of Destination",
+                            "dataType": "String",
+                            "description": "The date customs clearance was completed.",
+                            "seededValues": {}
+                         },
+                         {
+                            "field": "Actual ATA - FF",
+                            "dataType": "Date",
+                            "description": "The date customs clearance was completed.",
+                            "seededValues": {}
+                         },
+                         {
+                            "field": "Gross weight (KG)",
+                            "dataType": "String",
+                            "description": "The date customs clearance was completed.",
+                            "seededValues": {}
+                          },
+                          {
+                            "field": "CBM",
+                            "dataType": "String",
+                            "description": "The date customs clearance was completed.",
+                            "seededValues": {}
+                          },
+                          {
+                            "field": "ETD",
+                            "dataType": "Date",
+                            "description": "The date customs clearance was completed.",
+                            "seededValues": {}
+                          },
+                          {
+                            "field": "Chargable Weight(KG)",
+                            "dataType": "String",
+                            "description": "The date customs clearance was completed.",
+                            "seededValues": {}
+                          },
+                          {
+                            "field": "Freight Cost",
+                            "dataType": "String",
+                            "description": "The date customs clearance was completed.",
+                            "seededValues": {}
+                          },
+                          {
+                            "field": "Total values of Goods",
+                            "dataType": "String",
+                            "description": "The date customs clearance was completed.",
+                            "seededValues": {}
+                          },
+                          {
+                            "field": "Freight Invoice Number",
+                            "dataType": "String",
+                            "description": "The date customs clearance was completed.",
+                            "seededValues": {}
+                          },
+                                                    {
+                            "field": "ETA",
+                            "dataType": "Date",
+                            "description": "The date customs clearance was completed.",
+                            "seededValues": {}
+                          },
+                          {
+                            "field": "Comment",
+                            "dataType": "String",
+                            "description": "The date customs clearance was completed.",
+                            "seededValues": {}
+                          }
                         ]
-
 }

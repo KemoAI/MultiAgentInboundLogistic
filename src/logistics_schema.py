@@ -1,8 +1,8 @@
 
-"""State Definitions and Pydantic Schemas for Research Scoping.
+"""State Definitions and Pydantic Schemas for Logistics Agent.
 
 This defines the state objects and structured schemas used for
-the research agent scoping workflow, including researcher state management and output schemas.
+the Logistics Agent scoping workflow, including Logistics state management and output schemas.
 """
 
 import operator
@@ -16,35 +16,36 @@ from pydantic import BaseModel, Field
 from src.supervisor_schema import AgentState
 from enum import Enum
 
-# ===== STATE DEFINITIONS =====
-
-class LogisticsState(AgentState):
-    """State for the logistician agent"""
-    pass
-
 # ===== STRUCTURED OUTPUT SCHEMAS =====
 
 class LogisticsSchema(BaseModel):
-    """Schema for logistician."""
+    """Schema for Logisticis Agent."""
     missing_mandatory_fields: List[str] = Field(
-        description = "List of missing mandatory fields"
+        description = "Fields required by the schema that are missing from the provided data"
     )
     missing_optional_fields: List[str] = Field(
-        description = "List of missing optional fields"
+        description = "Optional fields that are missing from the provided data"
     )
-    is_confirmed_by_user: bool = Field(
-        description = "indicates whether has been confirmed by the user or not",
-        default = False
+    ask_for_optional_fields: bool = Field(
+        description = "Specifies whether the user should be prompted for optional fields",
+        default = True
     )
-    AWB: str = Field(
-        description="AWB Description"
+    needs_user_confirmation: bool = Field(
+        description = "Specifies whether user confirmation is required for the current record",
+        default = True
     )
-    product_temperature: str = Field(
-        description="Product Temperature Description",
+    AWB_BL: Optional[str] = Field(
+        description = "The unique Air Waybill or Bill of Lading number for the shipment"
     )
-    handover_to_clearance: Optional[date] = Field(
-        description="date of handover to clearance",
+    Product_Temperature: Optional[str] = Field(
+        description = "Temperature requirements or description for the product",
     )
-    shipment_mode: str = Field(
-        description="shipment mode",
+    Shipment_Mode: Optional[str] = Field(
+        description = "Mode of shipment (e.g., air, sea, road)",
     )
+
+# ===== STATE DEFINITIONS =====
+
+class LogisticsState(AgentState):
+    """ State for the Logistics Agent """
+    agent_response: Optional[LogisticsSchema] = None
