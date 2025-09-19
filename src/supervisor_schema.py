@@ -47,7 +47,6 @@ class AgentState(MessagesState):
 
     Extends MessagesState with additional fields for routing coordination.
     """
-
     supervisor_messages: Annotated[Sequence[BaseMessage], add_messages]
     clarification_schemas: Optional[ClarifyWithUser] = None
     agent_brief: str

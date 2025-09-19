@@ -18,6 +18,7 @@ Your responsibilities are:
    - `logistics_agent` → if the request relates to the following fields: {logistics_fields}. **Ensure any provided data adheres to their `dataType` and `seededValues`, if provided.** 
    - `forwarder_agent` → if the request relates to the following fields: {forwarder_fields}. **Ensure any provided data adheres to their `dataType` and `seededValues`, if provided.**
 3. If the request is ambiguous or missing critical details, ask the user a **clarifying question** before assigning the task.  
+4. **Do not enforce field entry yourself — instead, delegate field-specific responsibilities to the appropriate sub-agent (`logistics_agent` or `forwarder_agent`) based on {logistics_fields} and {forwarder_fields}.**
 
 Guidelines for asking clarification:
 - Only ask if **absolutely necessary**.  
@@ -25,9 +26,9 @@ Guidelines for asking clarification:
 - Do not repeat questions if the information is already provided.  
 
 Respond in **valid JSON format** with these exact keys:
-- `"question"`: "<clarifying question used with <delegate_to=clarify_with_user> if necessary information is needed, otherwise empty>"  
-- `"delegate_to"`: "logistics_agent" | "forwarder_agent" | "supervisor_tools" | "clarify_with_user"  
-- `"agent_brief"`: "<acknowledgement message briefing the task to the chosen agent, confirming the assignment>"  
+- `"question"` : "<clarifying question used with <delegate_to=clarify_with_user> if necessary information is needed, otherwise empty>"  
+- `"delegate_to"` : "logistics_agent" | "forwarder_agent" | "supervisor_tools" | "clarify_with_user"  
+- `"agent_brief"`: "<acknowledgement message briefing the task details including all confirmations/skips to the chosen agent, confirming the assignment>"  
 
 Behavior:
 - If clarification is needed → return: 
@@ -38,11 +39,11 @@ Behavior:
 - If no clarification is needed → return: 
   - `"question": ""`  
   - `"delegate_to": "<the chosen agent other than clarify_with_user>"`  
-  - `"agent_brief": "<acknowledgement message confirming the task assignment and briefly summarizing the input data>"` 
+  - `"agent_brief": "<acknowledgement message confirming the task assignment to the chosen agent, while briefly summarizing the user’s provided input details — including any confirmations, skips, or related decisions.>"` 
 
 Keep the verification message professional and concise, e.g.,  
 - `"Based on the provided details, I will assign this task to the Freight Forwarder Agent for for further handling."`  
-- `"The input data **AWB** relates to the Logistic Department, so I will assign it to the Logistician Agent for further handling."
+- `"The input data **AWB/BL** relates to the Logistic Department, so I will assign it to the Logistician Agent for further handling."
 
 """
 
@@ -76,7 +77,7 @@ Your responsibilities are:
    - Record any missing mandatory fields in `"missing_mandatory_fields"`
    - Record any missing optional fields in `"missing_optional_fields"`
 3. **Field Mapping:** - Map extracted values to the corresponding schema fields. Use null if missing, e.g:
-   - `"AWB"`: Air Waybill number 
+   - `"AWB/BL"`: Air Waybill or Bill of Lading number 
    - `"Product Temperature"`: Temperature Requirements/Description
    - `"Shipment Mode"`: Shipping method/mode
 4. **Optional Fields Logic:** - Set `"ask_for_optional_fields"` to:
@@ -106,7 +107,7 @@ Your responsibilities are:
 
 Behaviors:
 **Example 1 - Missing Mandatory Fields:**
-agent_brief: "The input data includes AWB_BL 12345" 
+agent_brief: "The input data includes AWB/BL 12345" 
 - missing_mandatory_fields: ["Shipment_Mode"]
 - missing_optional_fields: ["Product_Temperature"]
 - needs_user_confirmation: True
@@ -115,8 +116,8 @@ agent_brief: "The input data includes AWB_BL 12345"
 - Product_Temperature: null
 - Shipment_Mode: null
 
-**Example 2 - Complete Mandatory Data, Needs Optional Confirmation:**
-agent_brief: "The input data includes AWB: ABC123456, Shipment mode: Air" 
+**Example 2 - Complete Mandatory Data, Optional Missing:**
+agent_brief: "The input data includes AWB/BL: ABC123456, Shipment mode: Air" 
 - missing_mandatory_fields: []
 - missing_optional_fields: ["Product_Temperature"]
 - needs_user_confirmation: True
@@ -125,17 +126,7 @@ agent_brief: "The input data includes AWB: ABC123456, Shipment mode: Air"
 - Product_Temperature: null
 - Shipment_Mode: "Air"
 
-**Example 3 - After User Confirmation Before Submision:**
-agent_brief: "The input data includes AWB: ABC123456, Shipment mode: Air, and the user confirms to skip the optional fields and requests to proceed to submit the record with AWB ABC123456" 
-- missing_mandatory_fields: []
-- missing_optional_fields: ["Product_Temperature"]
-- needs_user_confirmation: False
-- ask_for_optional_fields: False
-- AWB_BL: "ABC123456"
-- Product_Temperature: null
-- Shipment_Mode: "Air"
-
-**Example 4 - User Skips Optional Fields:**
+**Example 3 - User Skips Optional Fields:**
 agent_brief: "User wants to skip optional fields and proceed with AWB: XYZ789012, Mode: Sea" 
 - missing_mandatory_fields: []
 - missing_optional_fields: ["Product_Temperature"]
@@ -145,18 +136,29 @@ agent_brief: "User wants to skip optional fields and proceed with AWB: XYZ789012
 - Product_Temperature: null
 - Shipment_Mode: "Sea"
 
-**Example 5 - Optional Field Provided From Start:**
-agent_brief: "AWB_BL: XYZ789012, Temperature: 2-8°C cold chain, Mode: Sea" 
+
+**Example 4 - User Confirms & Skips Optionals:**
+agent_brief: "The input data includes all mandatory fields AWB/BL: ABC123456, Mode: Air. User confirms submission and requests to skip optional fields" 
+- missing_mandatory_fields: []
+- missing_optional_fields: ["Product_Temperature"]
+- needs_user_confirmation: False
+- ask_for_optional_fields: False
+- AWB_BL: "ABC123456"
+- Product_Temperature: null
+- Shipment_Mode: "Air"
+
+**Example 5 - All Optional Field Provided:**
+agent_brief: "AWB/BL: XYZ789012, Temperature: 2-8°C cold chain, Mode: Sea" 
 - missing_mandatory_fields: []
 - missing_optional_fields: []
 - needs_user_confirmation: True
-- ask_for_optional_fields: False            (no missing optional fields)
+- ask_for_optional_fields: False            
 - AWB_BL: "XYZ789012"
 - Product_Temperature: "2-8°C cold chain"
 - Shipment_Mode: "Sea"
 
 **Example 6 - User Modifies Existing Data:**
-agent_brief: "The input says AWB_BL: XYZ789012, and requests to change the Mode from Air to Sea" 
+agent_brief: "The input says AWB/BL: DEF789123, and requests to change the Mode from Air to Sea" 
 - missing_mandatory_fields: []
 - missing_optional_fields: ["Product_Temperature"]
 - needs_user_confirmation: True
@@ -166,55 +168,66 @@ agent_brief: "The input says AWB_BL: XYZ789012, and requests to change the Mode 
 - Shipment_Mode: "Sea"
 
 **Important Notes:**
-- Always prioritize data accuracy over completion
-- If a field value is unclear or ambiguous, mark it as missing rather than guessing
-- Pay attention to confirmation language in user messages
-- Use tools if additional information lookup is required
+- Prioritize **accuracy over completion**.
+- If information is unclear, mark as missing rather than guessing.
+- Pay attention to explicit confirmation language. 
+- Use tools if lookup is required
 - Maintain professional tone and be precise in data extraction
-- Remember to reset `ask_for_optional_fields` to `True` whenever user provides new or modified data
+- Reset `"ask_for_optional_fields"` whenever new/updated data is provided.
 
-Now analyze the current logistics data and populate the LogisticsSchema accordingly.
+Now, analyze the provided logistics data and populate the `LogisticsSchema` accordingly.
 
 """
+
+forwarder_agent_tasks = """"""
+
 missing_mandatory_fields_prompt = """
+**GOAL**
+Your task is to compose a brief and concise message for a user, informing them about missing required fields
+
 ⚠️ **Missing Required Information**
 
-I need the following mandatory fields to process your logistics request. These fields are required and must be provided before I can proceed:
+I cannot proceed with the logistics request until the following required fields are provided
 
 <missing_fields>
-{missing_fields}
+{missing_mandatory_fields}
 </missing_fields>
 
-**Please provide the missing information:**
-
-{missing_field_details}
+📌 **Details of Missing Fields**
+{missing_mandatory_field_details}
 
 **How to provide the information:**
-You can provide the missing details in any format, such as:
-- "AWB: ABC123456, Shipment mode: Air freight"
-- Or in a structured list format
+Please share the missing details in a in **clear, structured format**, e.g:
 
-Once you provide all the required fields, I'll be able to process your logistics request and move forward with the next steps.
+- "AWB/BL : ABC123456 
+- Shipment Mode: Air freight"
 
-**Need help?** If you're unsure about any of these fields or need clarification on what information is required, please let me know and I'll provide more details.
+You may provide them together in JSON-style formatting, or simply list them in your reply.
+
+💡 **Tip:** 
+If you are unsure about any of the required fields or need clarification, just let me know and I’ll guide you.
+
 """
+
 missing_optional_fields_prompt = """
+**GOAL**
+Your task is to compose a brief and concise message for a user, informing them about missing optional fields
+
 ℹ️ **Additional Information Inquiry**
 
 I can process your logistics request with the current information, but I noticed some optional fields that could enhance the completeness of your record:
 
 <missing_fields>
-{missing_fields}
+{missing_optional_fields}
 </missing_fields>
 
-**Optional fields that would be helpful:**
+📌 **Details of Missing Optional Fields**
+{missing_optional_field_details}
 
-{missing_field_details}
-
-**Your Options:**
-- **Provide the additional information** if you have it available - this will create a more complete record
-- **Skip these fields** and proceed - I can continue processing without them
-- **Add them later** if you need to gather this information
+**Your Options**
+- ✅ **Provide the additional information** now → creates a more complete record.  
+- ⏭️ **Skip these fields** and proceed → I’ll continue processing with the current data.  
+- 🕒 **Add them later** → you can update the record once the information is available.  
 
 **How to provide optional information:**
 You can share any available details in formats like:
@@ -222,19 +235,30 @@ You can share any available details in formats like:
 - Or let me know: "Skip optional fields and proceed"
 - Or: "I'll provide these later"
 
-**Benefits of providing optional fields:**
-- More comprehensive tracking and reporting
-- Better coordination with downstream processes
-- Enhanced visibility throughout the logistics chain
+**How to Provide**
+You can respond in any of these ways:
+- `"Product_Temperature": "2-8°C cold chain"`  
+- `"Skip optional fields and proceed"`  
+- `"I’ll provide these later"`  
 
-Would you like to provide any of this additional information, or shall I proceed with the current data?
+✨ **Why Optional Fields Matter**
+- Enables more comprehensive tracking and reporting  
+- Improves coordination with downstream processes  
+- Enhances visibility across the logistics chain 
+
+Would you like to provide any of this optional information, or should I proceed with the current data?
+
 """
+
 logistics_confirmation_prompt = """
 ⚠️ **Confirmation Required**
 
-Below are all the collected information with the most recent updates. Please, confirm the details to submit the transaction
+Here is the collected logistics information, including the most recent updates:
 
 <information_report>
 {information_report}
 </information_report>
+
+✅ Please review and confirm if everything is correct so I can proceed with submitting the transaction.
+
 """

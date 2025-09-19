@@ -11,37 +11,34 @@ from langchain_core.messages import SystemMessage , HumanMessage, AIMessage, get
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import Command
 from langgraph.checkpoint.memory import InMemorySaver
+from langchain_mcp_adapters.client import MultiServerMCPClient
 from src.prompt import missing_mandatory_fields_prompt, missing_optional_fields_prompt, \
                         logistics_confirmation_prompt, logistics_agent_tasks
 from src.logistics_schema import LogisticsSchema, LogisticsState
-from langchain_mcp_adapters.client import MultiServerMCPClient
+from src.ibl_data_source import ibl_data_source
 
-# ===== UTILITY FUNCTIONS =====
-
+# Current Date
 def get_today_str() -> str:
     """Get current date in a human-readable format."""
     return datetime.now().strftime("%a %b %#d, %Y")
 
-# ===== IBL FIELDS =====
-try:
-    with open ("../logistics_schema.json" , "r") as config_file:
-        logistics_schema_fields = json.load(config_file).get('logistics_schema', [])
-except FileNotFoundError:
-    print("Error: logistics_schema.json not found. Please create it.")
-    exit()
+# ===== Import Logistics Fields ("Mandatory","Optional") =====
+import_logistics_schema = ibl_data_source("../ibl_schema.json","logistics_agent")
 
-# Process the fields
+logistics_fields = [
+    item for item in import_logistics_schema
+]
 mandatory_fields = [
-    item['field'] for item in logistics_schema_fields if item.get('required') is True
+    item['field'] for item in import_logistics_schema if item.get('required') is True
 ]
 optional_fields = [
-    item['field'] for item in logistics_schema_fields if item.get('required') is False
+    item['field'] for item in import_logistics_schema if item.get('required') is False
 ]
 
 def get_selected_field_details(all_fields, missed_fields):
     """
     """
-    return [ fields for fields in all_fields if fields['field'] in missed_fields]
+    return [ fields for fields in all_fields if fields in missed_fields]
 
 # ===== MCP Configuration =====
 mcp_config = None
@@ -63,7 +60,6 @@ def get_mcp_client():
         _client = MultiServerMCPClient(mcp_config)
     return _client
 
-# ===== CONFIGURATION =====
 
 # Initialize model
 model = init_chat_model(model="openai:gpt-4.1", temperature=0.0)
@@ -79,42 +75,46 @@ def logistics_agent(state: LogisticsState) -> Command[Literal["logistics_tools",
 
     # Invoke the model
     response = structured_output_model.invoke([
-               HumanMessage(content=logistics_agent_tasks.format(
-                                    agent_brief = state["agent_brief"], 
-                                    date = get_today_str(),
-                                    fields_details=logistics_schema_fields,
-                                    mandatory_fields=mandatory_fields,
-                                    optional_fields=optional_fields
+               HumanMessage(content = logistics_agent_tasks.format(
+                                      agent_brief = state["agent_brief"], 
+                                      date = get_today_str(),
+                                      fields_details = logistics_fields,
+                                      mandatory_fields = mandatory_fields,
+                                      optional_fields = optional_fields
                ))
     ])
+
+    agent_brief_messages = [AIMessage(content = state["agent_brief"])]
 
     if response.missing_mandatory_fields:        # missing mandatory fields
         return Command(
                goto=END, 
-               update={"messages": model.invoke([AIMessage(content=missing_mandatory_fields_prompt.format(
-                                                           missing_fields = response.missing_mandatory_fields,
-                                                           missing_field_details = get_selected_field_details(all_fields = logistics_schema_fields,
-                                                                                                              missed_fields = response.missing_mandatory_fields))
-                                                     )])}
+               update={"messages": agent_brief_messages + [model.invoke([AIMessage(content = missing_mandatory_fields_prompt.format(
+                                                                                  missing_mandatory_fields = response.missing_mandatory_fields,
+                                                                                  missing_mandatory_field_details = get_selected_field_details(all_fields = logistics_fields,
+                                                                                                                        missed_fields = response.missing_mandatory_fields))
+                                                     )])]}
         )
     elif response.missing_optional_fields and response.ask_for_optional_fields: # missing optional fields before confirmation
         return Command(
                goto=END, 
-               update={"messages": model.invoke([AIMessage(content=missing_optional_fields_prompt.format(
-                                                           missing_fields = response.missing_optional_fields,
-                                                           missing_field_details = get_selected_field_details(all_fields = logistics_schema_fields,
+               update={"messages": agent_brief_messages + [model.invoke([AIMessage(content = missing_optional_fields_prompt.format(
+                                                                                  missing_optional_fields = response.missing_optional_fields,
+                                                                                  missing_optional_field_details = get_selected_field_details(all_fields = logistics_fields,
                                                                                                               missed_fields = response.missing_optional_fields))
-                                                     )])}
+                                                     )])]}
         )
     elif response.needs_user_confirmation: # missing confirmation
         return Command(
-               goto="ConfirmWithUser", 
-               update={"agent_response": response}
+               goto = "ConfirmWithUser", 
+               update = {"agent_response" : response,
+                          "message" : agent_brief_messages}
         )
     else: # everything is OK and confirmed
         return Command(
-               goto="CommitLogisticsTransaction", 
-               update={"agent_response": response}
+               goto = "CommitLogisticsTransaction", 
+               update = {"agent_response": response , 
+                         "message" : agent_brief_messages}
         )
 
 def ConfirmWithUser(state: LogisticsState) -> Command[Literal["__end__"]]: 
@@ -126,7 +126,7 @@ def ConfirmWithUser(state: LogisticsState) -> Command[Literal["__end__"]]:
     # Print the summary requesting confirmation
     return Command(
            goto=END, 
-           update={"messages": model.invoke([AIMessage(content=logistics_confirmation_prompt.format(information_report=state["agent_response"].model_dump()))])}
+           update={"messages": model.invoke([AIMessage(content = logistics_confirmation_prompt.format(information_report=state["agent_response"].model_dump()))])}
     )
 
 def logistics_tools(state: LogisticsState):
@@ -163,6 +163,9 @@ async def CommitLogisticsTransaction(state: LogisticsState):
 
     # Get the update database tool
     UpdateDB = tools_by_name["UpdateDB"]
+
+    # Initialize model with tool binding
+    model_with_tools = model.bind_tools(UpdateDB)
 
     # get the last response which includes all the filled values after confirmation
     response = state["agent_response"]

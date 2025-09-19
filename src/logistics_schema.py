@@ -6,15 +6,30 @@ the Logistics Agent scoping workflow, including Logistics state management and o
 """
 
 import operator
-from typing_extensions import Optional, Annotated, List, Sequence
 from datetime import date
+from typing_extensions import Optional, Annotated, List, Sequence
 
 from langchain_core.messages import BaseMessage
 from langgraph.graph import MessagesState
 from langgraph.graph.message import add_messages
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field , create_model
 from src.supervisor_schema import AgentState
-from enum import Enum
+from src.ibl_data_source import ibl_data_source
+
+# Load logitics fields dynamiclly
+logistics_fields = ibl_data_source("../ibl_schema.json","logistics_agent")
+
+# Dynamically create Pydantic model for shipment fields
+DynamicShipmentFields = create_model(
+    "DynamicShipmentFields",
+    **{
+        field_item["field"]: (
+            Optional[field_item["dataType"]],  # default type; could later map dataType
+            Field(None, description = field_item.get("description", ""))
+        )
+        for field_item in logistics_fields
+    }
+)
 
 # ===== STRUCTURED OUTPUT SCHEMAS =====
 
@@ -38,10 +53,10 @@ class LogisticsSchema(BaseModel):
         description = "The unique Air Waybill or Bill of Lading number for the shipment"
     )
     Product_Temperature: Optional[str] = Field(
-        description = "Temperature requirements or description for the product",
+        description = "The temperature conditions required to safely transport and store a product"
     )
     Shipment_Mode: Optional[str] = Field(
-        description = "Mode of shipment (e.g., air, sea, road)",
+        description = "The method of transporting goods from the origin to the destination"
     )
 
 # ===== STATE DEFINITIONS =====

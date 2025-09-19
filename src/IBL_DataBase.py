@@ -1,4 +1,6 @@
 """ This code defines a tool to push records to IBL DB """
+
+import sys
 from typing import Dict, Any
 from langchain_core.tools import tool
 from mcp.server.fastmcp import FastMCP
@@ -8,7 +10,7 @@ import asyncio
 mcp = FastMCP("db-server")
 
 @mcp.tool()
-async def UpdateDB(record: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+async def UpdateDB(record: Dict[str, Any]) -> Dict[str, Any]:
     """
     Update the IBL database and confirm back.
 
@@ -29,5 +31,5 @@ async def UpdateDB(record: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
         return str(e)
 
 # Main execution
-if __name__ == "__main__":
+if name == "__main__":
     mcp.run(transport="stdio")
