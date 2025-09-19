@@ -9,4 +9,4 @@ wheels/
 # Virtual environments
 .venv
 .env
-/notebooks/test.ipynb
+/notebooks/mylab.ipynb
