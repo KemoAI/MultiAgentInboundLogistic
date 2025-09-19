@@ -13,7 +13,7 @@ from langgraph.types import Command
 from langgraph.checkpoint.memory import InMemorySaver
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from src.prompt import missing_mandatory_fields_prompt, missing_optional_fields_prompt, \
-                        logistics_confirmation_prompt, logistics_agent_tasks
+                        user_confirmation_prompt, logistics_agent_tasks
 from src.logistics_schema import LogisticsSchema, LogisticsState
 from src.ibl_data_source import ibl_data_source
 
@@ -92,7 +92,7 @@ def logistics_agent(state: LogisticsState) -> Command[Literal["logistics_tools",
                update={"messages": agent_brief_messages + [model.invoke([AIMessage(content = missing_mandatory_fields_prompt.format(
                                                                                   missing_mandatory_fields = response.missing_mandatory_fields,
                                                                                   missing_mandatory_field_details = get_selected_field_details(all_fields = logistics_fields,
-                                                                                                                        missed_fields = response.missing_mandatory_fields))
+                                                                                                                                               missed_fields = response.missing_mandatory_fields))
                                                      )])]}
         )
     elif response.missing_optional_fields and response.ask_for_optional_fields: # missing optional fields before confirmation
@@ -101,7 +101,7 @@ def logistics_agent(state: LogisticsState) -> Command[Literal["logistics_tools",
                update={"messages": agent_brief_messages + [model.invoke([AIMessage(content = missing_optional_fields_prompt.format(
                                                                                   missing_optional_fields = response.missing_optional_fields,
                                                                                   missing_optional_field_details = get_selected_field_details(all_fields = logistics_fields,
-                                                                                                              missed_fields = response.missing_optional_fields))
+                                                                                                                                              missed_fields = response.missing_optional_fields))
                                                      )])]}
         )
     elif response.needs_user_confirmation: # missing confirmation
@@ -126,7 +126,7 @@ def ConfirmWithUser(state: LogisticsState) -> Command[Literal["__end__"]]:
     # Print the summary requesting confirmation
     return Command(
            goto=END, 
-           update={"messages": model.invoke([AIMessage(content = logistics_confirmation_prompt.format(information_report=state["agent_response"].model_dump()))])}
+           update={"messages": model.invoke([AIMessage(content = user_confirmation_prompt.format(agent = "Logistics", information_report = state["agent_response"].model_dump()))])}
     )
 
 def logistics_tools(state: LogisticsState):

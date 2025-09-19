@@ -1,8 +1,8 @@
 
-"""State Definitions and Pydantic Schemas for Logistics Agent.
+"""State Definitions and Pydantic Schemas for Forwarder Agent.
 
 This defines the state objects and structured schemas used for
-the Logistics Agent scoping workflow, including Logistics state management and output schemas.
+the Forwarder Agent scoping workflow, including Forwarder state management and output schemas.
 """
 
 import operator
@@ -32,7 +32,8 @@ DynamicShipmentFields = create_model(
 )
 
 # ===== STRUCTURED OUTPUT SCHEMAS =====
-class LogisticsSchema(BaseModel):
+
+class ForwarderSchema(BaseModel):
     """Schema for Logisticis Agent."""
     missing_mandatory_fields: List[str] = Field(
         description = "Fields required by the schema that are missing from the provided data"
@@ -48,17 +49,9 @@ class LogisticsSchema(BaseModel):
         description = "Specifies whether user confirmation is required for the current record",
         default = True
     )
-    AWB_BL: Optional[str] = Field(
-        description = "The unique Air Waybill or Bill of Lading number for the shipment"
-    )
-    Product_Temperature: Optional[str] = Field(
-        description = "The temperature conditions required to safely transport and store a product"
-    )
-    Shipment_Mode: Optional[str] = Field(
-        description = "The method of transporting goods from the origin to the destination"
-    )
 
 # ===== STATE DEFINITIONS =====
-class LogisticsState(AgentState):
+
+class ForwarderState(AgentState):
     """ State for the Logistics Agent """
     agent_response: Optional[LogisticsSchema] = None
