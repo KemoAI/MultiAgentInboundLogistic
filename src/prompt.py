@@ -186,7 +186,7 @@ missing_mandatory_fields_prompt = """
 Your task is to compose a brief and concise message for a user, informing them about missing required fields
 
 ⚠️ **Missing Required Information**
-I cannot proceed with the logistics request until the following required fields are provided
+I cannot proceed with the {agent} request until the following required fields are provided
 
 <missing_fields>
 {missing_mandatory_fields}
@@ -213,7 +213,7 @@ missing_optional_fields_prompt = """
 Your task is to compose a brief and concise message for a user, informing them about missing optional fields
 
 ℹ️ **Additional Information Inquiry**
-I can process your logistics request with the current information, but I noticed some optional fields that could enhance the completeness of your record:
+I can process your {agent} request with the current information, but I noticed some optional fields that could enhance the completeness of your record:
 
 <missing_fields>
 {missing_optional_fields}
@@ -242,7 +242,7 @@ You can respond in any of these ways:
 ✨ **Why Optional Fields Matter**
 - Enables more comprehensive tracking and reporting  
 - Improves coordination with downstream processes  
-- Enhances visibility across the logistics chain 
+- Enhances visibility across the Inbound Logistics Chain 
 
 Would you like to provide any of this optional information, or should I proceed with the current data?
 

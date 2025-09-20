@@ -7,17 +7,14 @@ the Forwarder Agent scoping workflow, including Forwarder state management and o
 
 import operator
 from datetime import date
-from typing_extensions import Optional, Annotated, List, Sequence
+from typing_extensions import Optional , List
 
-from langchain_core.messages import BaseMessage
-from langgraph.graph import MessagesState
-from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field , create_model
 from src.supervisor_schema import AgentState
 from src.ibl_data_source import ibl_data_source
 
-# Load logitics fields dynamiclly
-logistics_fields = ibl_data_source("../ibl_schema.json","logistics_agent")
+# Load forwarder fields dynamiclly
+forwarder_fields = ibl_data_source("../ibl_schema.json","forwarder_agent")
 
 # Dynamically create Pydantic model for shipment fields
 DynamicShipmentFields = create_model(
@@ -27,12 +24,11 @@ DynamicShipmentFields = create_model(
             Optional[field_item["dataType"]],  # default type; could later map dataType
             Field(None, description = field_item.get("description", ""))
         )
-        for field_item in logistics_fields
+        for field_item in forwarder_fields
     }
 )
 
 # ===== STRUCTURED OUTPUT SCHEMAS =====
-
 class ForwarderSchema(BaseModel):
     """Schema for Logisticis Agent."""
     missing_mandatory_fields: List[str] = Field(
@@ -51,7 +47,6 @@ class ForwarderSchema(BaseModel):
     )
 
 # ===== STATE DEFINITIONS =====
-
 class ForwarderState(AgentState):
-    """ State for the Logistics Agent """
-    agent_response: Optional[LogisticsSchema] = None
+    """ State for the forwarder Agent """
+    agent_response: Optional[ForwarderSchema] = None
