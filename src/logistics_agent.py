@@ -22,7 +22,7 @@ def get_today_str() -> str:
     return datetime.now().strftime("%a %b %#d, %Y")
 
 # ===== Import Logistics Fields ("Mandatory","Optional") =====
-import_logistics_schema = ibl_data_source("../ibl_schema.json","logistics_agent")
+import_logistics_schema = ibl_data_source("../IBL_SCHEMA.json","logistics_agent")
 
 logistics_fields = [
     item for item in import_logistics_schema
@@ -109,13 +109,13 @@ def logistics_agent(state: LogisticsState) -> Command[Literal["logistics_tools",
         return Command(
                goto = "ConfirmWithUser", 
                update = {"agent_response" : response,
-                          "message" : agent_brief_messages}
+                          "messages" : agent_brief_messages}
         )
     else: # everything is OK and confirmed
         return Command(
                goto = "CommitLogisticsTransaction", 
                update = {"agent_response": response , 
-                         "message" : agent_brief_messages}
+                         "messages" : agent_brief_messages}
         )
 
 def ConfirmWithUser(state: LogisticsState) -> Command[Literal["__end__"]]: 
@@ -166,7 +166,7 @@ async def CommitLogisticsTransaction(state: LogisticsState):
     UpdateDB = tools_by_name["UpdateDB"]
 
     # Initialize model with tool binding
-    model_with_tools = model.bind_tools(UpdateDB)
+    # model_with_tools = model.bind_tools(UpdateDB)
 
     # get the last response which includes all the filled values after confirmation
     response = state["agent_response"]

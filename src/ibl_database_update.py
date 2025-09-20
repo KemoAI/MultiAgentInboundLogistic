@@ -30,5 +30,5 @@ async def UpdateDB(record: Dict[str, Any]) -> Dict[str, Any]:
         return str(e)
 
 # Main execution
-if name == "__main__":
+if __name__ == "__main__":
     mcp.run(transport="stdio")

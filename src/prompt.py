@@ -183,7 +183,7 @@ forwarder_agent_tasks = """"""
 
 missing_mandatory_fields_prompt = """
 **GOAL**
-Your task is to compose a brief and concise message for a user, informing them about missing required fields
+Write a concise message for a user, informing them about missing required fields. Start right away without introduction
 
 ⚠️ **Missing Required Information**
 I cannot proceed with the {agent} request until the following required fields are provided
@@ -210,7 +210,7 @@ If you are unsure about any of the required fields or need clarification, just l
 
 missing_optional_fields_prompt = """
 **GOAL**
-Your task is to compose a brief and concise message for a user, informing them about missing optional fields
+Write a concise message for a user, informing them about missing optional fields. Start right away without introduction
 
 ℹ️ **Additional Information Inquiry**
 I can process your {agent} request with the current information, but I noticed some optional fields that could enhance the completeness of your record:
@@ -249,6 +249,9 @@ Would you like to provide any of this optional information, or should I proceed 
 """
 
 user_confirmation_prompt = """
+**GOAL**
+Write a concise message for a user summarizing the final list of fields required to be confirmed. Start right away without introduction
+
 ⚠️ **Confirmation Required**
 
 Here is the collected {agent} information, including the most recent updates:
