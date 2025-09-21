@@ -77,9 +77,9 @@ Your responsibilities are:
    - Record any missing mandatory fields in `"missing_mandatory_fields"`
    - Record any missing optional fields in `"missing_optional_fields"`
 3. **Field Mapping:** - Map extracted values to the corresponding schema fields. Use null if missing, e.g:
-   - `"AWB/BL"`: Air Waybill or Bill of Lading number 
-   - `"Product Temperature"`: Temperature Requirements/Description
-   - `"Shipment Mode"`: Shipping method/mode
+   - `"AWB/BL"`: The unique Air Waybill or Bill of Lading number for the shipment
+   - `"Product Temperature"`: The temperature conditions required to safely transport and store a product.
+   - `"Shipment Mode"`: The method of transporting goods from the origin to the destination.
 4. **Optional Fields Logic:** - Set `"ask_for_optional_fields"` to:
    - `False` ONLY if the user explicitly requests to skip them or to skip items listed in missing_optional_fields (phrases like "skip optional", "proceed without optional", "don't ask for optional", "ignore optional fields", "skip x,y,z" where missing_optional_fields=[x,y,z]))
    - `True` in all other cases (default behavior)
@@ -112,9 +112,9 @@ agent_brief: "The input data includes AWB/BL 12345"
 - missing_optional_fields: ["Product_Temperature"]
 - needs_user_confirmation: True
 - ask_for_optional_fields: True
-- AWB_BL: 12345
-- Product_Temperature: null
-- Shipment_Mode: null
+- AWB/BL: 12345
+- Product Temperature: null
+- Shipment Mode: null
 
 **Example 2 - Complete Mandatory Data, Optional Missing:**
 agent_brief: "The input data includes AWB/BL: ABC123456, Shipment mode: Air" 
@@ -122,9 +122,9 @@ agent_brief: "The input data includes AWB/BL: ABC123456, Shipment mode: Air"
 - missing_optional_fields: ["Product_Temperature"]
 - needs_user_confirmation: True
 - ask_for_optional_fields: True
-- AWB_BL: "ABC123456"
-- Product_Temperature: null
-- Shipment_Mode: "Air"
+- AWB/BL: "ABC123456"
+- Product Temperature: null
+- Shipment Mode: "Air"
 
 **Example 3 - User Skips Optional Fields:**
 agent_brief: "User wants to skip optional fields and proceed with AWB: XYZ789012, Mode: Sea" 
@@ -132,10 +132,9 @@ agent_brief: "User wants to skip optional fields and proceed with AWB: XYZ789012
 - missing_optional_fields: ["Product_Temperature"]
 - needs_user_confirmation: True
 - ask_for_optional_fields: False
-- AWB_BL: "XYZ789012"
-- Product_Temperature: null
-- Shipment_Mode: "Sea"
-
+- AWB/BL: "XYZ789012"
+- Product Temperature: null
+- Shipment Mode: "Sea"
 
 **Example 4 - User Confirms & Skips Optionals:**
 agent_brief: "The input data includes all mandatory fields AWB/BL: ABC123456, Mode: Air. User confirms submission and requests to skip optional fields" 
@@ -143,9 +142,9 @@ agent_brief: "The input data includes all mandatory fields AWB/BL: ABC123456, Mo
 - missing_optional_fields: ["Product_Temperature"]
 - needs_user_confirmation: False
 - ask_for_optional_fields: False
-- AWB_BL: "ABC123456"
-- Product_Temperature: null
-- Shipment_Mode: "Air"
+- AWB/BL: "ABC123456"
+- Product Temperature: null
+- Shipment Mode: "Air"
 
 **Example 5 - All Optional Field Provided:**
 agent_brief: "AWB/BL: XYZ789012, Temperature: 2-8°C cold chain, Mode: Sea" 
@@ -153,9 +152,9 @@ agent_brief: "AWB/BL: XYZ789012, Temperature: 2-8°C cold chain, Mode: Sea"
 - missing_optional_fields: []
 - needs_user_confirmation: True
 - ask_for_optional_fields: False            
-- AWB_BL: "XYZ789012"
-- Product_Temperature: "2-8°C cold chain"
-- Shipment_Mode: "Sea"
+- AWB/BL: "XYZ789012"
+- Product Temperature: "2-8°C cold chain"
+- Shipment Mode: "Sea"
 
 **Example 6 - User Modifies Existing Data:**
 agent_brief: "The input says AWB/BL: DEF789123, and requests to change the Mode from Air to Sea" 
@@ -163,9 +162,9 @@ agent_brief: "The input says AWB/BL: DEF789123, and requests to change the Mode 
 - missing_optional_fields: ["Product_Temperature"]
 - needs_user_confirmation: True
 - ask_for_optional_fields: True             (reset to True due to modification)
-- AWB_BL: "DEF789123"
-- Product_Temperature: null
-- Shipment_Mode: "Sea"
+- AWB/BL: "DEF789123"
+- Product Temperature: null
+- Shipment Mode: "Sea"
 
 **Important Notes:**
 - Prioritize **accuracy over completion**.
@@ -279,7 +278,7 @@ agent_brief: "The input data includes all mandatory fields Shipment Readiness Da
 - No. of Pallets: null
 
 **Example 5 - All Optional Field Provided:**
-agent_brief: "Shipment Readiness Date: 2025-09-22, Pick Up Date: 2025-09-28 and No. of Pallets: 30" 
+agent_brief: "Shipment Readiness Date: 2025-09-23, Pick Up Date: 2025-09-29 and No. of Pallets: 30" 
 - missing_mandatory_fields: []
 - missing_optional_fields: []
 - needs_user_confirmation: True
@@ -289,14 +288,14 @@ agent_brief: "Shipment Readiness Date: 2025-09-22, Pick Up Date: 2025-09-28 and 
 - No. of Pallets: 30
 
 **Example 6 - User Modifies Existing Data:**
-agent_brief: "The input says AWB/BL: DEF789123, and requests to change the Mode from Air to Sea" 
+agent_brief: "The user input Shipment Readiness Date: 2025-09-24, and requested to change the Pick Up Date from 2025-09-29 to 2025-09-30" 
 - missing_mandatory_fields: []
-- missing_optional_fields: ["Product_Temperature"]
+- missing_optional_fields: ["No. of Pallets"]
 - needs_user_confirmation: True
 - ask_for_optional_fields: True             (reset to True due to modification)
-- Shipment Readiness Date: "2025-09-22"
-- Pick Up Date: "2025-09-28"
-- No. of Pallets: 30
+- Shipment Readiness Date: "2025-09-24"
+- Pick Up Date: "2025-09-30"
+- No. of Pallets: null
 
 **Important Notes:**
 - Prioritize **accuracy over completion**.
@@ -356,22 +355,11 @@ I can process your {agent} request with the current information, but I noticed s
 - ⏭️ **Skip these fields** and proceed → I’ll continue processing with the current data.  
 - 🕒 **Add them later** → you can update the record once the information is available.  
 
-**How to provide optional information:**
-You can share any available details in formats like:
-- "Handover date: 2024-12-20"
-- Or let me know: "Skip optional fields and proceed"
-- Or: "I'll provide these later"
-
-**How to Provide**
+**How to Provide the optional fields**
 You can respond in any of these ways:
 - `"Product_Temperature": "2-8°C cold chain"`  
 - `"Skip optional fields and proceed"`  
 - `"I’ll provide these later"`  
-
-✨ **Why Optional Fields Matter**
-- Enables more comprehensive tracking and reporting  
-- Improves coordination with downstream processes  
-- Enhances visibility across the Inbound Logistics Chain 
 
 Would you like to provide any of this optional information, or should I proceed with the current data?
 
