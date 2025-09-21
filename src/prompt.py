@@ -86,7 +86,7 @@ Your responsibilities are:
    - **Important**: - Reset to `True` whenever the user provides new or updated data
 5. **Confirmation Logic:** - Set `"needs_user_confirmation"` to:
    - `False` ONLY if:
-     - All mandatory fields are present AND
+     - No missing mandatory fields `mssing_mandatory_fields=[]`
      - The user explicitly confirms the record details
    - `True` in all other cases (default behavior)
 </Instructions>
