@@ -92,7 +92,7 @@ def logistics_agent(state: LogisticsState) -> Command[Literal["logistics_tools",
                                                                                    agent = "Logistics" ,
                                                                                    missing_mandatory_fields = response.missing_mandatory_fields,
                                                                                    missing_mandatory_field_details = get_selected_field_details(all_fields = logistics_fields,
-                                                                                                                                               missed_fields = response.missing_mandatory_fields))
+                                                                                                                                                missed_fields = response.missing_mandatory_fields))
                                                      )])]}
         )
     elif response.missing_optional_fields and response.ask_for_optional_fields: # missing optional fields before confirmation

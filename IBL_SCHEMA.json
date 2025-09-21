@@ -12,19 +12,19 @@
                             "dataType": "date",
                             "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
                             "seededValues": {},
-                            "required": false
+                            "required": true
                          },
                          {
                             "field": "Forwarder",
                             "dataType": "str",
-                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "description": "Forwarder is the company that organizes and manages the movement of goods on behalf of the shipper (exporter or importer).",
                             "seededValues": {},
                             "required": false
                          },
                          {
                             "field": "Incoterm",
                             "dataType": "str",
-                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "description": "Incoterms (International Commercial Terms) are a set of standardized trade rules define the responsibilities between buyer and seller in international trade.",
                             "seededValues": {}
                          },
                          {
@@ -44,7 +44,7 @@
                           {
                             "field": "Shipping Temp",
                             "dataType": "str",
-                            "description": "The method of transporting goods from the origin to the destination",
+                            "description": "The temperature conditions required to safely transport goods during transit.",
                             "seededValues": {},
                             "required": false
                           },
@@ -58,7 +58,7 @@
                           {
                             "field": "Handover to Clearance",
                             "dataType": "date",
-                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "description": "The date of handing over the documents to the customs broker or clearance agent so that customs clearance can begin.",
                             "seededValues": {},
                             "required": false
                           },
@@ -93,21 +93,21 @@
                            {
                             "field": "Logistic Comment",
                             "dataType": "str",
-                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "description": "Logistic Comment or Remards.",
                             "seededValues": {},
                             "required": false
                            },
                            {
                             "field": "Remark",
                             "dataType": "str",
-                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "description": "General Comment or Remarks.",
                             "seededValues": {},
                             "required": false
                            },
                            {
                             "field": "ASN Importation Date",
                             "dataType": "date",
-                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "description": "The date when the ASN (Advance Shipment Notice) is officially imported into the system.",
                             "seededValues": {},
                             "required": false
                            }

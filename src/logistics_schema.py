@@ -44,15 +44,8 @@ class LogisticsSchema(BaseModel):
         description = "Specifies whether user confirmation is required for the current record",
         default = True
     )
-    AWB_BL: Optional[str] = Field(
-        description = "The unique Air Waybill or Bill of Lading number for the shipment"
-    )
-    Product_Temperature: Optional[str] = Field(
-        description = "The temperature conditions required to safely transport and store a product"
-    )
-    Shipment_Mode: Optional[str] = Field(
-        description = "The method of transporting goods from the origin to the destination"
-    )
+
+    shipment : DynamicShipmentFields
 
 # ===== STATE DEFINITIONS =====
 class LogisticsState(AgentState):

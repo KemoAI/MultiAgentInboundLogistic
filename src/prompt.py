@@ -48,7 +48,7 @@ Keep the verification message professional and concise, e.g.,
 """
 
 logistics_agent_tasks = """
-These are the logistics Data received so far:
+These are the Logistics Data received so far:
 
 <agent_brief>
 {agent_brief}
@@ -81,13 +81,13 @@ Your responsibilities are:
    - `"Product Temperature"`: Temperature Requirements/Description
    - `"Shipment Mode"`: Shipping method/mode
 4. **Optional Fields Logic:** - Set `"ask_for_optional_fields"` to:
-   - `False` ONLY if the user explicitly requests to skip them (phrases like "skip optional", "proceed without optional", "don't ask for optional", "ignore optional fields")
+   - `False` ONLY if the user explicitly requests to skip them or to skip items listed in missing_optional_fields (phrases like "skip optional", "proceed without optional", "don't ask for optional", "ignore optional fields", "skip x,y,z" where missing_optional_fields=[x,y,z]))
    - `True` in all other cases (default behavior)
    - **Important**: - Reset to `True` whenever the user provides new or updated data
 5. **Confirmation Logic:** - Set `"needs_user_confirmation"` to:
    - `False` ONLY if:
      - All mandatory fields are present AND
-     - The user explicitly confirms the record (phrases like "confirm", "approve", "proceed", "yes, that’s correct").
+     - The user explicitly confirms the record details
    - `True` in all other cases (default behavior)
 </Instructions>
 
@@ -179,7 +179,136 @@ Now, analyze the provided logistics data and populate the `LogisticsSchema` acco
 
 """
 
-forwarder_agent_tasks = """"""
+forwarder_agent_tasks = """
+These are the Forwarder Data received so far:
+
+<agent_brief>
+{agent_brief}
+</agent_brief>
+
+<field_specifications>
+{fields_details}
+</field_specifications>
+
+<mandatory_fields>
+{mandatory_fields}
+</mandatory_fields>
+
+<optional_fields>
+{optional_fields}
+</optional_fields>
+
+Today's date is {date}.
+
+Your role is to act as the Forwarder Agent in the Inbound Logistics system.  
+Your responsibilities are:
+
+<Instructions>
+1. **Extract Information:** - Parse the provided data and extract values for all available schema fields
+2. **Identify Missing Fields:** 
+   - Record any missing mandatory fields in `"missing_mandatory_fields"`
+   - Record any missing optional fields in `"missing_optional_fields"`
+3. **Field Mapping:** - Map extracted values to the corresponding schema fields. Use null if missing, e.g:
+   - `"AWB/BL"`: Air Waybill or Bill of Lading number 
+   - `"Product Temperature"`: Temperature Requirements/Description
+   - `"Shipment Mode"`: Shipping method/mode
+4. **Optional Fields Logic:** - Set `"ask_for_optional_fields"` to:
+   - `False` ONLY if the user explicitly requests to skip them or to skip items listed in missing_optional_fields (phrases like "skip optional", "proceed without optional", "don't ask for optional", "ignore optional fields", "skip x,y,z" where missing_optional_fields=[x,y,z]))
+   - `True` in all other cases (default behavior)
+   - **Important**: - Reset to `True` whenever the user provides new or updated data
+5. **Confirmation Logic:** - Set `"needs_user_confirmation"` to:
+   - `False` ONLY if:
+     - All mandatory fields are present AND
+     - The user explicitly confirms the record details
+   - `True` in all other cases (default behavior)
+</Instructions>
+
+<Data Extraction Guidelines>
+- **Missing Fields**
+  - Always set missing fields to null (None in Python)
+  - Never use empty strings as placeholders
+- **Dates** 
+  - Convert all dates into Python date objects
+  - If no date is provided, set the field to null (None in Python)
+- **String**
+  - Extract exact values as provided
+  - Use full descriptive text if available, without truncation
+- **Field Name Flexibility** - Support variations in field names. e.g, "AWB", "AWB Number", "Air Waybill" → all map to AWB
+- **Ambiguous Information** - f the data is unclear, inconsistent, or cannot be reliably determined, set the field to null (None in Python)
+</Data Extraction Guidelines>
+
+Behaviors:
+**Example 1 - Missing Mandatory Fields:**
+agent_brief: "The input data includes AWB/BL 12345" 
+- missing_mandatory_fields: ["Shipment_Mode"]
+- missing_optional_fields: ["Product_Temperature"]
+- needs_user_confirmation: True
+- ask_for_optional_fields: True
+- AWB_BL: 12345
+- Product_Temperature: null
+- Shipment_Mode: null
+
+**Example 2 - Complete Mandatory Data, Optional Missing:**
+agent_brief: "The input data includes AWB/BL: ABC123456, Shipment mode: Air" 
+- missing_mandatory_fields: []
+- missing_optional_fields: ["Product_Temperature"]
+- needs_user_confirmation: True
+- ask_for_optional_fields: True
+- AWB_BL: "ABC123456"
+- Product_Temperature: null
+- Shipment_Mode: "Air"
+
+**Example 3 - User Skips Optional Fields:**
+agent_brief: "User wants to skip optional fields and proceed with AWB: XYZ789012, Mode: Sea" 
+- missing_mandatory_fields: []
+- missing_optional_fields: ["Product_Temperature"]
+- needs_user_confirmation: True
+- ask_for_optional_fields: False
+- AWB_BL: "XYZ789012"
+- Product_Temperature: null
+- Shipment_Mode: "Sea"
+
+**Example 4 - User Confirms & Skips Optionals:**
+agent_brief: "The input data includes all mandatory fields AWB/BL: ABC123456, Mode: Air. User confirms submission and requests to skip optional fields" 
+- missing_mandatory_fields: []
+- missing_optional_fields: ["Product_Temperature"]
+- needs_user_confirmation: False
+- ask_for_optional_fields: False
+- AWB_BL: "ABC123456"
+- Product_Temperature: null
+- Shipment_Mode: "Air"
+
+**Example 5 - All Optional Field Provided:**
+agent_brief: "AWB/BL: XYZ789012, Temperature: 2-8°C cold chain, Mode: Sea" 
+- missing_mandatory_fields: []
+- missing_optional_fields: []
+- needs_user_confirmation: True
+- ask_for_optional_fields: False            
+- AWB_BL: "XYZ789012"
+- Product_Temperature: "2-8°C cold chain"
+- Shipment_Mode: "Sea"
+
+**Example 6 - User Modifies Existing Data:**
+agent_brief: "The input says AWB/BL: DEF789123, and requests to change the Mode from Air to Sea" 
+- missing_mandatory_fields: []
+- missing_optional_fields: ["Product_Temperature"]
+- needs_user_confirmation: True
+- ask_for_optional_fields: True             (reset to True due to modification)
+- AWB_BL: "DEF789123"
+- Product_Temperature: null
+- Shipment_Mode: "Sea"
+
+**Important Notes:**
+- Prioritize **accuracy over completion**.
+- If information is unclear, mark as missing rather than guessing.
+- Pay attention to explicit confirmation language. 
+- Use tools if lookup is required
+- Maintain professional tone and be precise in data extraction
+- Reset `"ask_for_optional_fields"` whenever new/updated data is provided.
+
+Now, analyze the provided forwarder data and populate the `ForwarderSchema` accordingly.
+
+"""
 
 missing_mandatory_fields_prompt = """
 **GOAL**
@@ -250,7 +379,7 @@ Would you like to provide any of this optional information, or should I proceed 
 
 user_confirmation_prompt = """
 **GOAL**
-Write a concise message for a user summarizing the final list of fields required to be confirmed. Start right away without introduction
+Write a concise message for a user summarizing the final list of fields for confirmation. Start right away without introduction
 
 ⚠️ **Confirmation Required**
 
