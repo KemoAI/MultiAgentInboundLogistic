@@ -116,49 +116,49 @@
                          {
                             "field": "Shipment Readiness Date",
                             "dataType": "date",
-                            "description": "Actual Time of Arrival of the shipment at the port.",
+                            "description": "The date on which the cargo is completely prepared, documented, and available for handover to the freight forwarder or carrier for transportation.",
                             "seededValues": {},
-                            "required": false
+                            "required": true
                          },
                          {
                             "field": "Pick Up Date",
                             "dataType": "date",
-                            "description": "Actual Time of Arrival of the shipment at the port.",
+                            "description": "The Pick Up Date is the actual date when the forwarder collects the cargo from the supplier’s premises (factory/warehouse).",
                             "seededValues": {},
-                            "required": false
+                            "required": true
                          },
                          {
                             "field": "No. of Pallets",
                             "dataType": "str",
-                            "description": "Actual Time of Arrival of the shipment at the port.",
+                            "description": "How many palletized cargo units are included in the shipment.",
                             "seededValues": {},
                             "required": false
                          },
                          {
                             "field": "No.of Containers",
                             "dataType": "str",
-                            "description": "Actual Time of Arrival of the shipment at the port.",
+                            "description": "How many shipping containers are required for a shipment.",
                             "seededValues": {},
                             "required": false
                          },
                          {
                             "field": "Commodity Description",
                             "dataType": "str",
-                            "description": "Actual Time of Arrival of the shipment at the port.",
+                            "description": "A clear and accurate explanation of the goods being shipped.",
                             "seededValues": {},
                             "required": false
                          },
                          {
                             "field": "Country Of Origin",
                             "dataType": "str",
-                            "description": "The date customs clearance was completed.",
+                            "description": "The Country of Origin (COO) is the country where the goods were manufactured, produced, or substantially transformed.",
                             "seededValues": {},
                             "required": false
                          },
                                                   {
                             "field": "AirPort/SeaPort name",
                             "dataType": "str",
-                            "description": "The date customs clearance was completed.",
+                            "description": "The specific port of loading or discharge where the goods are handed over to the carrier (origin port) or received at the destination (discharge port).",
                             "seededValues": {},
                             "required": false
                          },

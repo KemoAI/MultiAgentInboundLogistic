@@ -209,16 +209,16 @@ Your responsibilities are:
    - Record any missing mandatory fields in `"missing_mandatory_fields"`
    - Record any missing optional fields in `"missing_optional_fields"`
 3. **Field Mapping:** - Map extracted values to the corresponding schema fields. Use null if missing, e.g:
-   - `"AWB/BL"`: Air Waybill or Bill of Lading number 
-   - `"Product Temperature"`: Temperature Requirements/Description
-   - `"Shipment Mode"`: Shipping method/mode
+   - `"Shipment Readiness Date"`: The date on which the cargo is completely prepared, documented, and available for handover to the freight forwarder or carrier for transportation 
+   - `"Pick Up Date"`: The Pick Up Date is the actual date when the forwarder collects the cargo from the supplier’s premises (factory/warehouse)
+   - `"No. of Pallets"`: How many palletized cargo units are included in the shipment
 4. **Optional Fields Logic:** - Set `"ask_for_optional_fields"` to:
    - `False` ONLY if the user explicitly requests to skip them or to skip items listed in missing_optional_fields (phrases like "skip optional", "proceed without optional", "don't ask for optional", "ignore optional fields", "skip x,y,z" where missing_optional_fields=[x,y,z]))
    - `True` in all other cases (default behavior)
    - **Important**: - Reset to `True` whenever the user provides new or updated data
 5. **Confirmation Logic:** - Set `"needs_user_confirmation"` to:
    - `False` ONLY if:
-     - All mandatory fields are present AND
+     - No missing mandatory fields `mssing_mandatory_fields=[]`
      - The user explicitly confirms the record details
    - `True` in all other cases (default behavior)
 </Instructions>
@@ -239,54 +239,54 @@ Your responsibilities are:
 
 Behaviors:
 **Example 1 - Missing Mandatory Fields:**
-agent_brief: "The input data includes AWB/BL 12345" 
-- missing_mandatory_fields: ["Shipment_Mode"]
-- missing_optional_fields: ["Product_Temperature"]
+agent_brief: "The input data includes Shipment Readiness Date: 2025-09-30" 
+- missing_mandatory_fields: ["Pick Up Date"]
+- missing_optional_fields: ["No. of Pallets"]
 - needs_user_confirmation: True
 - ask_for_optional_fields: True
-- AWB_BL: 12345
-- Product_Temperature: null
-- Shipment_Mode: null
+- Shipment Readiness Date: "2025-09-30"
+- Pick Up Date: null
+- No. of Pallets: null
 
 **Example 2 - Complete Mandatory Data, Optional Missing:**
-agent_brief: "The input data includes AWB/BL: ABC123456, Shipment mode: Air" 
+agent_brief: "The input data includes Shipment Readiness Date: 2025-09-20 and Pick Up Date: 2025-09-26" 
 - missing_mandatory_fields: []
-- missing_optional_fields: ["Product_Temperature"]
+- missing_optional_fields: ["No. of Pallets"]
 - needs_user_confirmation: True
 - ask_for_optional_fields: True
-- AWB_BL: "ABC123456"
-- Product_Temperature: null
-- Shipment_Mode: "Air"
+- Shipment Readiness Date: "2025-09-20"
+- Pick Up Date: "2025-09-26"
+- No. of Pallets: null
 
 **Example 3 - User Skips Optional Fields:**
-agent_brief: "User wants to skip optional fields and proceed with AWB: XYZ789012, Mode: Sea" 
+agent_brief: "User wants to skip optional fields and proceed with Shipment Readiness Date: 2025-09-21 and Pick Up Date: 2025-09-27" 
 - missing_mandatory_fields: []
-- missing_optional_fields: ["Product_Temperature"]
+- missing_optional_fields: ["No. of Pallets"]
 - needs_user_confirmation: True
 - ask_for_optional_fields: False
-- AWB_BL: "XYZ789012"
-- Product_Temperature: null
-- Shipment_Mode: "Sea"
+- Shipment Readiness Date: "2025-09-21"
+- Pick Up Date: "2025-09-27"
+- No. of Pallets: null
 
 **Example 4 - User Confirms & Skips Optionals:**
-agent_brief: "The input data includes all mandatory fields AWB/BL: ABC123456, Mode: Air. User confirms submission and requests to skip optional fields" 
+agent_brief: "The input data includes all mandatory fields Shipment Readiness Date: 2025-09-22 and Pick Up Date: 2025-09-28. User confirms submission and requests to skip optional fields" 
 - missing_mandatory_fields: []
-- missing_optional_fields: ["Product_Temperature"]
+- missing_optional_fields: ["No. of Pallets"]
 - needs_user_confirmation: False
 - ask_for_optional_fields: False
-- AWB_BL: "ABC123456"
-- Product_Temperature: null
-- Shipment_Mode: "Air"
+- Shipment Readiness Date: "2025-09-22"
+- Pick Up Date: "2025-09-28"
+- No. of Pallets: null
 
 **Example 5 - All Optional Field Provided:**
-agent_brief: "AWB/BL: XYZ789012, Temperature: 2-8°C cold chain, Mode: Sea" 
+agent_brief: "Shipment Readiness Date: 2025-09-22, Pick Up Date: 2025-09-28 and No. of Pallets: 30" 
 - missing_mandatory_fields: []
 - missing_optional_fields: []
 - needs_user_confirmation: True
 - ask_for_optional_fields: False            
-- AWB_BL: "XYZ789012"
-- Product_Temperature: "2-8°C cold chain"
-- Shipment_Mode: "Sea"
+- Shipment Readiness Date: "2025-09-22"
+- Pick Up Date: "2025-09-28"
+- No. of Pallets: 30
 
 **Example 6 - User Modifies Existing Data:**
 agent_brief: "The input says AWB/BL: DEF789123, and requests to change the Mode from Air to Sea" 
@@ -294,9 +294,9 @@ agent_brief: "The input says AWB/BL: DEF789123, and requests to change the Mode 
 - missing_optional_fields: ["Product_Temperature"]
 - needs_user_confirmation: True
 - ask_for_optional_fields: True             (reset to True due to modification)
-- AWB_BL: "DEF789123"
-- Product_Temperature: null
-- Shipment_Mode: "Sea"
+- Shipment Readiness Date: "2025-09-22"
+- Pick Up Date: "2025-09-28"
+- No. of Pallets: 30
 
 **Important Notes:**
 - Prioritize **accuracy over completion**.
