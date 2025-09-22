@@ -5,6 +5,7 @@ langchain-openai
 langchain-mcp-adapters
 langchain-community
 langchain-tavily
+uvicorn
 langgraph
 transformers
 fastapi[standard]
