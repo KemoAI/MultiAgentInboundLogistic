@@ -2,11 +2,12 @@
 """This code contains the code for the forwarder agent"""
 import os
 import json
+from dotenv import load_dotenv
 from datetime import datetime
 from typing_extensions import Literal
 
 from langchain.chat_models import init_chat_model
-from langchain_core.messages import SystemMessage , HumanMessage, AIMessage, get_buffer_string
+from langchain_core.messages import SystemMessage , ToolMessage , HumanMessage, AIMessage, get_buffer_string
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import Command
 from langgraph.checkpoint.memory import InMemorySaver
@@ -16,13 +17,16 @@ from src.prompt import missing_mandatory_fields_prompt, missing_optional_fields_
 from src.forwarder_schema import ForwarderSchema , ForwarderState
 from src.ibl_data_source import ibl_data_source
 
+# Load environment variables
+load_dotenv()
+
 # Current Date
 def get_today_str() -> str:
     """Get current date in a human-readable format."""
     return datetime.now().strftime("%a %b %#d, %Y")
 
 # ===== Import forwarder Fields ("Mandatory","Optional") =====
-import_forwarder_schema = ibl_data_source("../IBL_SCHEMA.json","forwarder_agent")
+import_forwarder_schema = ibl_data_source("./IBL_SCHEMA.json","forwarder_agent")
 
 forwarder_fields = [
     item for item in import_forwarder_schema
@@ -43,7 +47,7 @@ def get_selected_field_details(all_fields, missed_fields):
 mcp_config = None
 
 try:
-    with open ("../mcp_servers.json" , "r") as mcp_file:
+    with open ("./mcp_servers.json" , "r") as mcp_file:
         mcp_config = json.load(mcp_file)
 except FileNotFoundError:
     print("Error: mcp_servers.json not found. Please create it.")
@@ -136,6 +140,9 @@ def forwarder_tools(state: ForwarderState):
         Returns updated state with tool execution results.
     """
     tool_calls = state["supervisor_messages"][-1].tool_calls
+
+    tools =  []
+    tools_by_name = {}
 
     # Execute all tool calls
     observations = []

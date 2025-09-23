@@ -13,7 +13,7 @@ from src.supervisor_schema import AgentState
 from src.ibl_data_source import ibl_data_source
 
 # Load logitics fields dynamiclly
-logistics_fields = ibl_data_source("../IBL_SCHEMA.json","logistics_agent")
+logistics_fields = ibl_data_source("./IBL_SCHEMA.json","logistics_agent")
 
 # Dynamically create Pydantic model for shipment fields
 DynamicShipmentFields = create_model(

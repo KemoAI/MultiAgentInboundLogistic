@@ -14,7 +14,7 @@ from src.supervisor_schema import AgentState
 from src.ibl_data_source import ibl_data_source
 
 # Load forwarder fields dynamiclly
-forwarder_fields = ibl_data_source("../IBL_SCHEMA.json","forwarder_agent")
+forwarder_fields = ibl_data_source("./IBL_SCHEMA.json","forwarder_agent")
 
 # Dynamically create Pydantic model for shipment fields
 DynamicShipmentFields = create_model(
