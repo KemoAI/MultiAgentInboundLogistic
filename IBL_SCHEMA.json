@@ -65,21 +65,21 @@
                           {
                             "field": "Aggregation",
                             "dataType": "str",
-                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "description": "Aggregation.",
                             "seededValues": {},
                             "required": false
                           },
                           {
                             "field": "Notified FF Date",
                             "dataType": "date",
-                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "description": "Notified FF Date.",
                             "seededValues": {},
                             "required": false
                           },
                           {
                             "field": "Green light - Date",
                             "dataType": "date",
-                            "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
+                            "description": "Green light - Date.",
                             "seededValues": {},
                             "required": false
                           },
@@ -165,84 +165,84 @@
                          {
                             "field": "Shipping Line/Airline",
                             "dataType": "str",
-                            "description": "The date customs clearance was completed.",
+                            "description": "The carrier company responsible for transporting goods—either an ocean carrier operating vessels for sea freight, or an airline handling cargo by air.",
                             "seededValues": {},
                             "required": false
                          },
                          {
                             "field": "Port Of Destination",
                             "dataType": "str",
-                            "description": "The date customs clearance was completed.",
+                            "description": "the final seaport or airport where the cargo is scheduled to be unloaded and handed over to the consignee.",
                             "seededValues": {},
                             "required": false
                          },
                          {
                             "field": "Actual ATA - FF",
                             "dataType": "date",
-                            "description": "The date customs clearance was completed.",
+                            "description": "Actual ATA - FF.",
                             "seededValues": {},
                             "required": false
                          },
                          {
                             "field": "Gross weight (KG)",
                             "dataType": "str",
-                            "description": "The date customs clearance was completed.",
+                            "description": "The total weight of a shipment.",
                             "seededValues": {},
                             "required": false
                           },
                           {
                             "field": "CBM",
                             "dataType": "str",
-                            "description": "The date customs clearance was completed.",
+                            "description": "CBM (Cubic Meter) is a measure of shipment volume, calculated as the length × width × height of the cargo in meters.",
                             "seededValues": {},
                             "required": false
                           },
                           {
                             "field": "ETD",
                             "dataType": "date",
-                            "description": "The date customs clearance was completed.",
+                            "description": "The planned or scheduled date and time when a shipment is expected to leave the port, airport, or warehouse.",
                             "seededValues": {},
                             "required": false
                           },
                           {
                             "field": "Chargable Weight(KG)",
                             "dataType": "str",
-                            "description": "The date customs clearance was completed.",
+                            "description": "The weight used by carriers to calculate freight charges.",
                             "seededValues": {},
                             "required": false
                           },
                           {
                             "field": "Freight Cost",
                             "dataType": "str",
-                            "description": "The date customs clearance was completed.",
+                            "description": "The price of transporting shipment from the port of country of origin to the port of country of destination.",
                             "seededValues": {},
                             "required": false
                           },
                           {
                             "field": "Total values of Goods",
                             "dataType": "str",
-                            "description": "The date customs clearance was completed.",
+                            "description": "The Total values of Goods.",
                             "seededValues": {},
                             "required": false
                           },
                           {
                             "field": "Freight Invoice Number",
                             "dataType": "str",
-                            "description": "The date customs clearance was completed.",
+                            "description": "The Freight Invoice Number.",
                             "seededValues": {},
                             "required": false
                           },
                           {
                             "field": "ETA",
                             "dataType": "date",
-                            "description": "The date customs clearance was completed.",
+                            "description": "The expected date and time when a shipment is scheduled to arrive at its destination port, airport, or delivery point.",
                             "seededValues": {},
                             "required": false
                           },
                           {
-                            "field": "Comment",
+                            "field": "Freight Comment",
                             "dataType": "str",
-                            "description": "The date customs clearance was completed.",
+                            "description": "General Comment pertaining Freight Forwarder.",
                             "seededValues": {},
                             "required": false
                           }
