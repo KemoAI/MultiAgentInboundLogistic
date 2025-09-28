@@ -41,7 +41,7 @@ optional_fields = [
 def get_selected_field_details(all_fields, missed_fields):
     """
     """
-    return [ fields for fields in all_fields if fields in missed_fields]
+    return [ fields for fields in all_fields if fields['field'] in missed_fields]
 
 # ===== MCP Configuration =====
 mcp_config = None
@@ -62,7 +62,6 @@ def get_mcp_client():
     if _client is None:
         _client = MultiServerMCPClient(mcp_config)
     return _client
-
 
 # Initialize model
 model = init_chat_model(model="openai:gpt-4.1", temperature=0.0)

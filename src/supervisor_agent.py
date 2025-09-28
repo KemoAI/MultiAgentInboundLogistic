@@ -31,7 +31,7 @@ checkpointer = InMemorySaver()
 
 # ===== IBL FIELDS =====
 try:
-    with open ("./IBL_SCHEMA.json" , "r") as config_file:
+    with open ("../IBL_SCHEMA.json" , "r") as config_file:
         routing_fields = json.load(config_file)
 except FileNotFoundError:
     print("Error: config.json not found. Please create it.")
@@ -142,11 +142,11 @@ def forwarder_agent(state: AgentState):
 supervisor_agent_builder = StateGraph(AgentState, input_schema=AgentInputState)
 
 # Add workflow nodes
-supervisor_agent_builder.add_node("supervisor_agent", supervisor_agent)
-supervisor_agent_builder.add_node("supervisor_tools", supervisor_tools)
-supervisor_agent_builder.add_node("clarify_with_user", clarify_with_user)
-supervisor_agent_builder.add_node("logistics_agent", logistics_agent)
-supervisor_agent_builder.add_node("forwarder_agent", forwarder_agent)
+supervisor_agent_builder.add_node("supervisor_agent"  , supervisor_agent)
+supervisor_agent_builder.add_node("supervisor_tools"  , supervisor_tools)
+supervisor_agent_builder.add_node("clarify_with_user" , clarify_with_user)
+supervisor_agent_builder.add_node("logistics_agent"   , logistics_agent)
+supervisor_agent_builder.add_node("forwarder_agent"   , forwarder_agent)
 
 # Add workflow edges
 supervisor_agent_builder.add_edge(START, "supervisor_agent")

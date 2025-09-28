@@ -1,5 +1,5 @@
 
-"""This code contains the code for the logistician agent"""
+"""This code contains the complete Inbound MultiAgent System"""
 
 import os
 from langchain_core.messages import HumanMessage, AIMessage, get_buffer_string
