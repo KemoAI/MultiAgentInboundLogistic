@@ -31,7 +31,7 @@ checkpointer = InMemorySaver()
 
 # ===== IBL FIELDS =====
 try:
-    with open ("../IBL_SCHEMA.json" , "r") as config_file:
+    with open ("./IBL_SCHEMA.json" , "r") as config_file:
         routing_fields = json.load(config_file)
 except FileNotFoundError:
     print("Error: config.json not found. Please create it.")
