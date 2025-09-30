@@ -180,10 +180,10 @@ async def CommitForwarderTransaction(state: ForwarderState):
 
     # Convert the response into dictionary and delete unnecessary fields
     response_dict = response.model_dump()
-    response_dict = {k:v for (k,v) in response_dict.items() if k not in ["missing_mandatory_fields", "missing_optional_fields",
+    shipment_only = {k:v for (k,v) in response_dict.items() if k not in ["missing_mandatory_fields", "missing_optional_fields",
                                                                          "ask_for_optional_fields", "needs_user_confirmation"]}
     # commit the forwarder transactions following the confirmation
-    confirmation_result = await UpdateDB.ainvoke({"record": response_dict})
+    confirmation_result = await UpdateDB.ainvoke({"record": shipment_only})
 
     return{
             "messages": [AIMessage(content=f"{confirmation_result}")]     # confirm back

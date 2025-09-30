@@ -6,13 +6,13 @@ from langchain_core.messages import HumanMessage, AIMessage, get_buffer_string
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import InMemorySaver
 
-from src.supervisor_schema import AgentInputState
+from src.supervisor_schema import AgentState , AgentInputState
 from src.supervisor_agent import DelegateNextAgent, clarify_with_user, supervisor_agent, supervisor_tools
-from src.logistics_agent import LogisticsAgent , LogisticsState
+from src.logistics_agent import LogisticsAgent
 from src.forwarder_agent import ForwarderAgent
 
 # Build the scoping workflow
-full_agent_builder = StateGraph(LogisticsState, input_schema=AgentInputState)
+full_agent_builder = StateGraph(AgentState ,  input_schema=AgentInputState)
 
 # Add workflow nodes
 full_agent_builder.add_node("supervisor_agent"  , supervisor_agent)
