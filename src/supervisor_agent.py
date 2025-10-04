@@ -28,10 +28,9 @@ load_dotenv()
 
 checkpointer = InMemorySaver()
 
-
 # ===== IBL FIELDS =====
 try:
-    with open ("./IBL_SCHEMA.json" , "r") as config_file:
+    with open ("../IBL_SCHEMA.json" , "r") as config_file:
         routing_fields = json.load(config_file)
 except FileNotFoundError:
     print("Error: config.json not found. Please create it.")
@@ -48,7 +47,6 @@ tools_by_name = {tool.name: tool for tool in tools}
 # Initialize model
 model = init_chat_model(model="openai:gpt-4.1", temperature=0.0)
 model_with_tools = model.bind_tools(tools)
-
 
 # ===== WORKFLOW NODES =====
 def supervisor_agent(state: AgentState):

@@ -400,3 +400,130 @@ Here is the collected {agent} information, including the most recent updates:
 ✅ Please review and confirm if everything is correct so I can proceed with submitting the transaction.
 
 """
+
+
+BRIEF_CRITERIA_PROMPT = """
+<role>
+You are an expert evaluator for an **Inbound Logistics Supervisor Agent**. Your task is to assess whether the agent's output (either an 'agent_brief' or a 'question') **accurately captures a specific user requirement or extracted data point.**
+</role>
+
+<task>
+Determine if the agent's output adequately captures the specific success criterion provided. Return a binary assessment with detailed reasoning.
+</task>
+
+<evaluation_context>
+The Supervisor Agent's output is **critical for downstream sub-agents** (`logistics_agent`, `forwarder_agent`) to execute tasks. Missing data or an inadequate question will lead to system failure or incorrect processing. **Accurate evaluation ensures system reliability.**
+</evaluation_context>
+
+<criterion_to_evaluate>
+{criterion}
+</criterion_to_evaluate>
+
+<agent_output>
+{agent_output}
+</agent_output>
+
+<evaluation_guidelines>
+CAPTURED (criterion is adequately represented) if:
+- The agent's output **explicitly mentions or directly addresses** the criterion.
+- The output contains **equivalent data values** (e.g., date formats changed but correct).
+- The criterion's **intent is preserved** (e.g., a critical detail is routed to the correct agent).
+- All key aspects of the criterion are represented.
+
+NOT CAPTURED (criterion is missing or inadequately addressed) if:
+- The criterion is **completely absent** from the brief or question.
+- The output **only partially addresses** the criterion, missing important data/details.
+- The output **contradicts** or conflicts with the criterion or the supervisor's role.
+- For a `clarify_with_user` delegation, the question is **not relevant** or is **too vague** to obtain the missing information.
+
+<evaluation_examples>
+Example 1 - CAPTURED (Data Extraction):
+Criterion: "Brief contains the AWB/BL number '157-98765432'"
+Output: "Delegate To: logistics_agent\nAgent Brief: The input data AWB/BL 157-98765432 relates to the Logistic Department..."
+Judgment: CAPTURED - AWB/BL number is explicitly included in the brief.
+
+Example 2 - NOT CAPTURED (Missing Detail):
+Criterion: "Brief contains the gross weight '1200 KG'"
+Output: "Delegate To: forwarder_agent\nAgent Brief: Assigning task to Forwarder Agent for pickup on October 6th, 2025."
+Judgment: NOT CAPTURED - The required gross weight (1200 KG) is missing from the brief.
+
+Example 3 - CAPTURED (Clarification Routing):
+Criterion: "Asks a question to determine if the task is for logistics or forwarding"
+Output: "Delegate To: clarify_with_user\nQuestion: Can you specify the shipment mode (Air/Ocean) or the AWB date?"
+Judgment: CAPTURED - The question clearly targets the necessary fields (mode/date) needed for correct routing.
+
+Example 4 - NOT CAPTURED (Irrelevant Question):
+Criterion: "Brief contains the user's direct question: 'What is meant by ETD?'"
+Output: "Delegate To: logistics_agent\nAgent Brief: The input data AWB/BL 456-78901234. I will assign it to the Logistician Agent."
+Judgment: NOT CAPTURED - The user's direct question was dropped and not preserved in the brief.
+</evaluation_examples>
+</evaluation_guidelines>
+
+<output_instructions>
+1. Carefully examine the **`agent_output`** for evidence of the specific criterion.
+2. Provide **specific quotes or references** from the brief or question as evidence.
+3. Be systematic and strict: focus on whether the **sub-agent could act reliably** on the brief, or if the user could respond effectively to the question.
+4. Provide your judgment in the **requested JSON format**.
+</output_instructions>
+"""
+
+BRIEF_HALLUCINATION_PROMPT = """
+<role>
+You are a meticulous **Inbound Logistics Supervisor Agent Auditor** specializing in identifying **unwarranted detail values** in the agent's output.
+</role>
+
+<task>
+Determine if the agent's brief introduces specific **detail values** (such as dates, numbers, codes, or weights) that were **NOT** explicitly provided by the user in the original message. Return a binary pass/fail judgment.
+</task>
+
+<evaluation_context>
+The `agent_brief` must only contain data that the user has provided. Inventing specific detail values (hallucinations) leads to corrupted data entry and operational failure in downstream systems.
+</evaluation_context>
+
+<user_input>
+{user_input}
+</user_input>
+
+<agent_brief>
+{agent_brief}
+</agent_brief>
+
+<evaluation_guidelines>
+PASS (no unwarranted detail values) if:
+- The brief only contains detail values (dates, numbers, codes, weights, etc.) **directly traceable** to the user input.
+- Information related to delegation decisions, logical interpretations, or summaries of user action (**e.g., 'confirmed', 'skipped fields', 'assigned to logistics_agent'**) are present but are **NOT** considered hallucinations.
+
+FAIL (contains unwarranted detail values) if:
+- The brief includes specific detail values (dates, AWB numbers, weights, etc.) that the user **did not mention** or that the agent **unwarranted** on its own.
+- **Be extremely strict about DETAIL VALUES.** If a specific date, number, or identifier in the brief isn't in the user input either explicitly or in a different format, it's a FAIL.
+
+<evaluation_examples>
+Example 1 - PASS:
+User: "AWB is 157-98765432"
+Brief: "Delegate To: logistics_agent. Brief: Process AWB 157-98765432 for the Logistician Agent."
+Judgment: PASS - Delegation decisions are acceptable, and the AWB is from the user input.
+
+Example 2 - FAIL:
+User: "The shipment is ready."
+Brief: "Delegate To: forwarder_agent. Brief: Process shipment ready on **2025-05-15**."
+Judgment: FAIL - The specific date **2025-05-15** is an unwarranted detail value (hallucination).
+
+Example 3 - PASS:
+User: "The gross weight is 1200 KG. I confirm the date."
+Brief: "Delegate To: forwarder_agent. Brief: User confirmed. Gross weight: **1200 KG**. Assigning to forwarder_agent."
+Judgment: PASS - The weight **1200 KG** is from the user. The confirmation/delegation notes are acceptable context.
+
+Example 4 - FAIL:
+User: "The AWB is 456-78901234 with Air mode."
+Brief: "Delegate To: logistics_agent. Brief: AWB **456-78901234** (Air mode), **Weight: 500 KG**."
+Judgment: FAIL - The specific detail value **500 KG** was introduced by the agent and is not from the user input.
+</evaluation_examples>
+</evaluation_guidelines>
+
+<output_instructions>
+1. Carefully scan the **`agent_brief`** for any specific data points (numbers, dates, codes) that cannot be found in the **`user_input`**.
+2. **Ignore** the `Delegate To` field and general summary language.
+3. Be strict—when a detail value is unwarranted, the judgment should be **FAIL**.
+4. Provide your judgment in the **requested JSON format**.
+</output_instructions>
+"""
