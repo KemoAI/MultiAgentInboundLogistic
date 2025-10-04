@@ -469,7 +469,7 @@ Judgment: NOT CAPTURED - The user's direct question was dropped and not preserve
 
 BRIEF_HALLUCINATION_PROMPT = """
 <role>
-You are a meticulous **Inbound Logistics Supervisor Agent Auditor** specializing in identifying **unwarranted detail values** in the agent's output.
+You are a meticulous **Inbound Logistics Supervisor Agent Auditor** specializing in identifying **unwarranted assumptions** in the agent's output.
 </role>
 
 <task>
