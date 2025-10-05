@@ -25,7 +25,8 @@
                             "field": "Incoterm",
                             "dataType": "str",
                             "description": "Incoterms (International Commercial Terms) are a set of standardized trade rules define the responsibilities between buyer and seller in international trade.",
-                            "seededValues": {}
+                            "seededValues": {},
+                            "required": false
                          },
                          {
                             "field": "Product Temperature",

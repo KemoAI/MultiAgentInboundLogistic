@@ -26,7 +26,7 @@ def get_today_str() -> str:
     return datetime.now().strftime("%a %b %#d, %Y")
 
 # ===== Import Logistics Fields ("Mandatory","Optional") =====
-import_logistics_schema = ibl_data_source("./IBL_SCHEMA.json","logistics_agent")
+import_logistics_schema = ibl_data_source("../IBL_SCHEMA.json","logistics_agent")
 
 logistics_fields = [
     item for item in import_logistics_schema
@@ -47,7 +47,7 @@ def get_selected_field_details(all_fields, missed_fields):
 mcp_config = None
 
 try:
-    with open ("./mcp_servers.json" , "r") as mcp_file:
+    with open ("../mcp_servers.json" , "r") as mcp_file:
         mcp_config = json.load(mcp_file)
 except FileNotFoundError:
     print("Error: mcp_servers.json not found. Please create it.")
@@ -91,7 +91,7 @@ def logistics_agent(state: LogisticsState) -> Command[Literal["logistics_tools",
     if response.missing_mandatory_fields:        # missing mandatory fields
         return Command(
                goto=END, 
-               update={"messages": agent_brief_messages + [model.invoke([AIMessage(content = missing_mandatory_fields_prompt.format(
+               update={"agent_response" : response ,"messages": agent_brief_messages + [model.invoke([AIMessage(content = missing_mandatory_fields_prompt.format(
                                                                                    agent = "Logistics" ,
                                                                                    missing_mandatory_fields = response.missing_mandatory_fields,
                                                                                    missing_mandatory_field_details = get_selected_field_details(all_fields = logistics_fields,
@@ -101,7 +101,7 @@ def logistics_agent(state: LogisticsState) -> Command[Literal["logistics_tools",
     elif response.missing_optional_fields and response.ask_for_optional_fields: # missing optional fields before confirmation
         return Command(
                goto=END, 
-               update={"messages": agent_brief_messages + [model.invoke([AIMessage(content = missing_optional_fields_prompt.format(
+               update={"agent_response" : response , "messages": agent_brief_messages + [model.invoke([AIMessage(content = missing_optional_fields_prompt.format(
                                                                                    agent = "Logistics" ,
                                                                                    missing_optional_fields = response.missing_optional_fields,
                                                                                    missing_optional_field_details = get_selected_field_details(all_fields = logistics_fields,
