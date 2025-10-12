@@ -182,7 +182,7 @@ async def CommitLogisticsTransaction(state: LogisticsState):
     shipment_only = {k:v for (k,v) in response_dict.items() if k not in ["missing_mandatory_fields", "missing_optional_fields",
                                                                          "ask_for_optional_fields", "needs_user_confirmation"]}
     # commit the logistics transactions following the confirmation
-    confirmation_result = await UpdateDB.ainvoke({"record": shipment_only})
+    confirmation_result = await UpdateDB.ainvoke({"record": shipment_only['shipment']})
 
     return{
             "messages": [AIMessage(content=f"{confirmation_result}")]     # confirm back

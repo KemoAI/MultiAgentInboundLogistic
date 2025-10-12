@@ -26,7 +26,7 @@ def get_today_str() -> str:
     return datetime.now().strftime("%a %b %#d, %Y")
 
 # ===== Import forwarder Fields ("Mandatory","Optional") =====
-import_forwarder_schema = ibl_data_source("./IBL_SCHEMA.json","forwarder_agent")
+import_forwarder_schema = ibl_data_source("../IBL_SCHEMA.json","forwarder_agent")
 
 forwarder_fields = [
     item for item in import_forwarder_schema
@@ -48,7 +48,7 @@ def get_selected_field_details(all_fields, missed_fields):
 mcp_config = None
 
 try:
-    with open ("./mcp_servers.json" , "r") as mcp_file:
+    with open ("../mcp_servers.json" , "r") as mcp_file:
         mcp_config = json.load(mcp_file)
 except FileNotFoundError:
     print("Error: mcp_servers.json not found. Please create it.")
@@ -183,7 +183,7 @@ async def CommitForwarderTransaction(state: ForwarderState):
     shipment_only = {k:v for (k,v) in response_dict.items() if k not in ["missing_mandatory_fields", "missing_optional_fields",
                                                                          "ask_for_optional_fields", "needs_user_confirmation"]}
     # commit the forwarder transactions following the confirmation
-    confirmation_result = await UpdateDB.ainvoke({"record": shipment_only})
+    confirmation_result = await UpdateDB.ainvoke({"record": shipment_only['shipment']})
 
     return{
             "messages": [AIMessage(content=f"{confirmation_result}")]     # confirm back

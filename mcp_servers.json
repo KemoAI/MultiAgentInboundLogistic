@@ -1,7 +1,7 @@
 {
     "db-server": {
         "command": "python",
-        "args": ["./src/ibl_database_update.py"],
+        "args": ["../src/ibl_database_update.py"],
         "transport": "stdio"
     }
 }
