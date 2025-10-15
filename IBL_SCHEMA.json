@@ -1,5 +1,26 @@
 {
     "logistics_agent" : [
+                        {
+                           "field": "Division_Name",
+                           "dataType": "str",
+                           "description": "The division name of the organization in which the shipment is being processed.",
+                           "seededValues": ["PHARMA SERVICE"],
+                           "required": true
+                         },
+                          {
+                           "field": "Organization_Name",
+                           "dataType": "str",
+                           "description": "The organization name is a sub-division entity in which the shipment is being received and processed.",
+                           "seededValues": ["PJO - PHARMA JEDDAH OPERATIONS","PRO - PHARMA RIYADH OPERATIONS","PKO - PHARMA KHOBAR OPERATIONS"],
+                           "required": true
+                         },
+                           {
+                           "field": "Supplier_Name",
+                           "dataType": "str",
+                           "description": "The supplier name is the entity responsible for manufacturing and supplying the goods.",
+                           "seededValues": ["13992-CARE FOR PHARMACEUTICAL AND MEDICAL DISTRIBUTION","14052-LUXURY EVENTS AND VIP TRAVEL"],
+                           "required": true
+                         },
                          {
                            "field": "AWB/BL",
                            "dataType": "str",
@@ -12,41 +33,42 @@
                             "dataType": "date",
                             "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
                             "seededValues": {},
-                            "required": true
+                            "required": false
                          },
                          {
                             "field": "Forwarder",
                             "dataType": "str",
                             "description": "Forwarder is the company that organizes and manages the movement of goods on behalf of the shipper (exporter or importer).",
-                            "seededValues": {},
-                            "required": false
+                            "seededValues":["sample","ARAMEX", "BULK", "CCP COLD CHAIN PACKING","FEDEX"],
+                            "required": true
                          },
                          {
                             "field": "Incoterm",
                             "dataType": "str",
                             "description": "Incoterms (International Commercial Terms) are a set of standardized trade rules define the responsibilities between buyer and seller in international trade.",
-                            "seededValues": {},
-                            "required": false
+                            "seededValues": ["DDP","FCA","EXF","C&F","CIF"],
+                            "required": true
+
                          },
                          {
                             "field": "Product Temperature",
                             "dataType": "str",
                             "description": "The temperature conditions required to safely transport and store a product.",
-                            "seededValues": {},
-                            "required": false
+                            "seededValues": ["frozen","2-8ºC","15-25ºC","dry shipments"],
+                            "required": true
                          },
                          {
                             "field": "Packing",
                             "dataType": "str",
                             "description": "The issuance date of the Air Waybill or Bill of Lading (YYYY-MM-DD).",
-                            "seededValues": {},
+                            "seededValues": ["Active","Passive"],
                             "required": false
                           },
                           {
                             "field": "Shipping Temp",
                             "dataType": "str",
                             "description": "The temperature conditions required to safely transport goods during transit.",
-                            "seededValues": {},
+                            "seededValues": ["2-8ºC","15-25ºC"],
                             "required": false
                           },
                           {
@@ -67,7 +89,7 @@
                             "field": "Aggregation",
                             "dataType": "str",
                             "description": "Aggregation.",
-                            "seededValues": {},
+                            "seededValues": ["yes","no"],
                             "required": false
                           },
                           {
@@ -88,7 +110,7 @@
                             "field": "Shipment Mode",
                             "dataType": "str",
                             "description": "The method of transporting goods from the origin to the destination.",
-                            "seededValues": {},
+                            "seededValues": ["AIR","SEA","LAND","SEA"],
                             "required": true
                            },
                            {
@@ -113,7 +135,14 @@
                             "required": false
                            }
                         ],
-    "forwarder_agent" : [
+    "forwarder_agent" : [ 
+                        {
+                            "field": "Clearing Number",
+                            "dataType": "str",
+                            "description": "The clearing number of the shipment to be used in forwarder agent",
+                            "seededValues": {},
+                            "required": true
+                         },
                          {
                             "field": "Shipment Readiness Date",
                             "dataType": "date",
@@ -150,11 +179,11 @@
                             "required": false
                          },
                          {
-                            "field": "Country Of Origin",
+                            "field": "Country Of Origin (loading_port)",
                             "dataType": "str",
                             "description": "The Country of Origin (COO) is the country where the goods were manufactured, produced, or substantially transformed.",
-                            "seededValues": {},
-                            "required": false
+                            "seededValues": ["*LOCAL*","AUSTRIA","BELGIUM","CHINA"],
+                            "required": true
                          },
                                                   {
                             "field": "AirPort/SeaPort name",
@@ -167,15 +196,15 @@
                             "field": "Shipping Line/Airline",
                             "dataType": "str",
                             "description": "The carrier company responsible for transporting goods—either an ocean carrier operating vessels for sea freight, or an airline handling cargo by air.",
-                            "seededValues": {},
-                            "required": false
+                            "seededValues": ["HAPAG lIOYD - HAPAG lIOYD","MAERSK - MAERSK","OOCL ORIENT OVERSEAS CONTAINER LINES - OOCL ORIENT OVERSEAS CONTAINER LINES","PYRAMID LINES - PYRAMID LINES"],
+                            "required": true
                          },
                          {
                             "field": "Port Of Destination",
                             "dataType": "str",
                             "description": "the final seaport or airport where the cargo is scheduled to be unloaded and handed over to the consignee.",
-                            "seededValues": {},
-                            "required": false
+                            "seededValues": ["JISP - JEDDAH SEAPORT","KAIA - JEDDAH AIRPORT","KKIA - RIYADH AIRPORT","DRY PORT - RIYADH"],
+                            "required": true
                          },
                          {
                             "field": "Actual ATA - FF",
@@ -238,7 +267,7 @@
                             "dataType": "date",
                             "description": "The expected date and time when a shipment is scheduled to arrive at its destination port, airport, or delivery point.",
                             "seededValues": {},
-                            "required": false
+                            "required": true
                           },
                           {
                             "field": "Freight Comment",
