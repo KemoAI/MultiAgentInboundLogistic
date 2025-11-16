@@ -35,6 +35,9 @@ try:
 except FileNotFoundError:
     print("Error: config.json not found. Please create it.")
 
+def get_field_names_description(list_of_field_dicts):
+    return [{k: v for k, v in d.items() if k in ['field', 'description']} for d in list_of_field_dicts]
+
 # ===== UTILITY FUNCTIONS =====
 def get_today_str() -> str:
     """Get current date in a human-readable format."""
@@ -62,8 +65,8 @@ def supervisor_agent(state: AgentState):
         HumanMessage(content=supervisor_decision_to_route_to_subagents.format(
             message=get_buffer_string(messages=state["messages"]), 
             date=get_today_str(),
-            logistics_fields=routing_fields.get("logistics_agent"),
-            forwarder_fields=routing_fields.get("forwarder_agent")
+            logistics_fields=get_field_names_description(routing_fields.get("logistics_agent")),
+            forwarder_fields=get_field_names_description(routing_fields.get("forwarder_agent"))
         ))
     ])
 
