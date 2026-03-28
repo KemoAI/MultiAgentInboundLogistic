@@ -65,7 +65,7 @@ def get_mcp_client():
     return _client
 
 # Initialize model
-model = init_chat_model(model="openai:gpt-4.1", temperature=0.0)
+model = init_chat_model(model="openai:gpt-5.1", temperature=0.0)
 summarize_model = model
 
 def forwarder_agent(state: ForwarderState) -> Command[Literal["forwarder_tools", "ConfirmWithUser", "CommitForwarderTransaction" , "__end__"]]:
@@ -79,7 +79,7 @@ def forwarder_agent(state: ForwarderState) -> Command[Literal["forwarder_tools",
     # Invoke the model
     response = structured_output_model.invoke([
                HumanMessage(content = forwarder_agent_tasks.format(
-                                      agent_brief = state["agent_brief"], 
+                                      agent_brief = state.get("agent_briefs", {}).get("forwarder_agent", ""),
                                       date = get_today_str(),
                                       fields_details = forwarder_fields,
                                       mandatory_fields = mandatory_fields,
@@ -87,7 +87,7 @@ def forwarder_agent(state: ForwarderState) -> Command[Literal["forwarder_tools",
                ))
     ])
 
-    agent_brief_messages = [AIMessage(content = state["agent_brief"])]
+    agent_brief_messages = [AIMessage(content = state.get("agent_briefs", {}).get("forwarder_agent", ""))]
 
     if response.missing_mandatory_fields:        # missing mandatory fields
         return Command(
@@ -185,8 +185,13 @@ async def CommitForwarderTransaction(state: ForwarderState):
     # commit the forwarder transactions following the confirmation
     confirmation_result = await UpdateDB.ainvoke({"record": shipment_only['shipment']})
 
+    d = state["agent_status"]
+    d["forwarder_agent"] = "completed"
     return{
-            "messages": [AIMessage(content=f"{confirmation_result}")]     # confirm back
+            "messages" : [AIMessage(content=f"{confirmation_result}")]   ,   # confirm back
+            "list_of_agents" : list(state.get("list_of_agents", []))[1:] ,   # Update the pending agents removing the current one after being processed
+            "agent_status" : d
+
     }
 
 # Build the scoping workflow

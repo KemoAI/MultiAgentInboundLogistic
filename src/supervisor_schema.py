@@ -50,3 +50,7 @@ class AgentState(MessagesState):
     supervisor_messages: Annotated[Sequence[BaseMessage], add_messages]
     clarification_schemas: Optional[ClarifyWithUser] = None
     agent_brief: str
+
+    list_of_agents: Optional[List[NextAgent]] = Field(default_factory=list)
+    agent_status: Optional[dict[str,str]] = Field(default_factory=dict)
+    agent_briefs: dict[str, str] = Field(default_factory=dict)

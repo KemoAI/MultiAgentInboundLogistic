@@ -20,7 +20,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.types import Command
 from langgraph.checkpoint.memory import InMemorySaver
 
-from src.prompt import supervisor_decision_to_route_to_subagents
+from src.prompt import supervisor_decision_to_route_to_subagents , supervisor_build_subagent_brief , supervisor_update_subagent_brief 
 from src.supervisor_schema import AgentState, ClarifyWithUser, AgentInputState, NextAgent
 
 # Load environment variables
@@ -38,6 +38,14 @@ except FileNotFoundError:
 def get_field_names_description(list_of_field_dicts):
     return [{k: v for k, v in d.items() if k in ['field', 'description']} for d in list_of_field_dicts]
 
+LOGISTICS_FIELDS = get_field_names_description(routing_fields.get("logistics_agent", []))
+FORWARDER_FIELDS = get_field_names_description(routing_fields.get("forwarder_agent", []))
+
+AGENT_FIELD_MAP = {
+    NextAgent.LOGISTICS_AGENT.value: LOGISTICS_FIELDS,
+    NextAgent.FORWARDER_AGENT.value: FORWARDER_FIELDS,
+}
+
 # ===== UTILITY FUNCTIONS =====
 def get_today_str() -> str:
     """Get current date in a human-readable format."""
@@ -48,7 +56,7 @@ tools = []
 tools_by_name = {tool.name: tool for tool in tools}
 
 # Initialize model
-model = init_chat_model(model="openai:gpt-4.1", temperature=0.0)
+model = init_chat_model(model="openai:gpt-5.1", temperature=0.0)
 model_with_tools = model.bind_tools(tools)
 
 # ===== WORKFLOW NODES =====
@@ -57,26 +65,63 @@ def supervisor_agent(state: AgentState):
         Supervisor Agent determines if the input data sufficient to make 
         deterministic decisions and assign the task to the next agent.
     """
+
+    current_agent = None
+    for agent_name, status in state.get("agent_status", {}).items():
+        if status == "pending_response":
+            current_agent = agent_name
+            break
+    if current_agent:
+        updated_briefs = dict(state.get("agent_briefs", {}))                  # Get the agent_briefs
+        updated_briefs[current_agent] = model.invoke([                        # Update the pending agent brief based on the last human message
+            HumanMessage(content=supervisor_update_subagent_brief.format(
+                                                                            agent               = current_agent,
+                                                                            relevant_fields     = AGENT_FIELD_MAP[current_agent],
+                                                                            current_brief       = updated_briefs.get(current_agent, ""),
+                                                                            latest_user_message = state["messages"][-2:],
+            ))
+        ]).content.strip()
+
+        return {
+            "agent_briefs": updated_briefs
+        }
+
     # Set up structured output model
     structured_output_model = model_with_tools.with_structured_output(ClarifyWithUser)
 
     # Invoke the model with clarification instructions
     response = structured_output_model.invoke([
         HumanMessage(content=supervisor_decision_to_route_to_subagents.format(
-            message=get_buffer_string(messages=state["messages"]), 
-            date=get_today_str(),
-            logistics_fields=get_field_names_description(routing_fields.get("logistics_agent")),
-            forwarder_fields=get_field_names_description(routing_fields.get("forwarder_agent"))
+                                                                            message             = get_buffer_string(messages=state["messages"]), 
+                                                                            date                = get_today_str(),
+                                                                            logistics_fields    = get_field_names_description(routing_fields.get("logistics_agent")),
+                                                                            forwarder_fields    = get_field_names_description(routing_fields.get("forwarder_agent"))
         ))
     ])
 
-    # Route based on clarification need
+    delegated_agents = [
+        agent for agent in list(dict.fromkeys(response.delegate_to))
+        if agent in (NextAgent.LOGISTICS_AGENT, NextAgent.FORWARDER_AGENT)
+    ]
+
+    agent_briefs = {}
+    for agent in delegated_agents:
+        agent_name = agent.value
+        agent_briefs[agent_name] = model.invoke([
+            HumanMessage(content=supervisor_build_subagent_brief.format(
+                                                                            agent               = agent_name,
+                                                                            relevant_fields     = AGENT_FIELD_MAP[agent_name],
+                                                                            user_chat_history   = state["messages"],
+                                                                            routing_brief       = response.agent_brief,
+            ))
+        ]).content.strip()
+
     return {
              "clarification_schemas" : response ,
              "agent_brief" : response.agent_brief,
-             "supervisor_messages": [
-                                    AIMessage(content=response.delegate_to.value)
-                                    ]
+             "agent_briefs": agent_briefs,
+             "list_of_agents": list(dict.fromkeys(response.delegate_to)),
+             "agent_status": {agent.value: "pending_response" for agent in delegated_agents}
            }
 
 def supervisor_tools(state: AgentState):
@@ -117,16 +162,20 @@ def DelegateNextAgent(state: AgentState) -> Literal["logistics_agent", "forwarde
         which agent should be assigned the task next 
     """
 
+    list_of_agents = state.get("list_of_agents", [])
+
     # Then check the routing decision
     clarification_schemas = state.get("clarification_schemas")
-    if not clarification_schemas:
+    if not list_of_agents or not clarification_schemas:
         return "__end__"
 
-    if clarification_schemas.delegate_to == NextAgent.LOGISTICS_AGENT:
+    next_agent = list_of_agents[0]
+
+    if next_agent == NextAgent.LOGISTICS_AGENT:
         return "logistics_agent"
-    elif clarification_schemas.delegate_to == NextAgent.FORWARDER_AGENT:
+    elif next_agent == NextAgent.FORWARDER_AGENT:
         return "forwarder_agent"
-    elif clarification_schemas.delegate_to == NextAgent.CLARIFY_WITH_USER:
+    elif next_agent == NextAgent.CLARIFY_WITH_USER:
         return "clarify_with_user"
     else:
         return "__end__"

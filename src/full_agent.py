@@ -33,6 +33,30 @@ full_agent_builder.add_conditional_edges(
         "forwarder_agent"   : "ForwarderAgent"
     },
 )
+
+full_agent_builder.add_conditional_edges(
+    "LogisticsAgent",
+     DelegateNextAgent,
+    {
+        "supervisor_tools"  : END , 
+        "clarify_with_user" : END, 
+        "logistics_agent"   : END   ,
+        "forwarder_agent"   : "ForwarderAgent"   ,
+        "__end__"           : END                ,
+    },
+)
+
+full_agent_builder.add_conditional_edges(
+    "ForwarderAgent",
+     DelegateNextAgent,
+    {
+        "supervisor_tools"  : END   , 
+        "clarify_with_user" : END   , 
+        "logistics_agent"   : END   ,
+        "forwarder_agent"   : END   ,
+        "__end__"           : END   ,
+    },
+)
 full_agent_builder.add_edge("supervisor_tools", "supervisor_agent")
 full_agent_builder.add_edge("clarify_with_user", END)
 
