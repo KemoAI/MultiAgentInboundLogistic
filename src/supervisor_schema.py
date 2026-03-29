@@ -30,8 +30,8 @@ class ClarifyWithUser(BaseModel):
     question: str = Field(
         description = "A question to ask the user to clarify the report scope",
     )
-    delegate_to: NextAgent = Field(
-        description = "A decision to delegate and route the task to the next agent",
+    delegate_to: List[NextAgent] = Field(
+        description = "An ordered list of agents to delegate and route the task to.",
     )
     agent_brief: str = Field(
         description = "A Brief that will be used to route the task to the next sub-agent",
