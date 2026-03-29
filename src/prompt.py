@@ -55,7 +55,7 @@ Target agent: {agent}
 Rules:
 1. Include ONLY fields relevant to {agent}.
 2. Include any direct user question ONLY if it is relevant to {agent}.
-3. Indicate no user confirmation nor skip-optional provided in a separate line.
+3. Must indicate no user confirmation nor skip-optional provided in a separate line.
 4. Exclude all fields, instructions, confirmations, and skip requests intended for any other agent.
 5. Do not invent field values.
 6. Keep the brief concise but explicit enough for the target agent to act reliably.
@@ -82,8 +82,8 @@ You are updating the brief for exactly one downstream agent.
 Target agent: {agent}
 Rules:
 1. Preserve existing relevant facts unless the latest user message corrects or overrides them.
-2. Modify the confirmation language ONLY if the latest user message clearly confirms {agent}'s record.
-3. Modify the skip-optional language ONLY if the latest user message clearly skips optional fields for {agent}.
+2. Modify the confirmation language ONLY if the latest user message clearly confirms {agent}'s record; you must keep the no-confirmation message otherwise.
+3. Modify the skip-optional language ONLY if the latest user message clearly skips optional fields for {agent}; you must keep the no-skip message otherwise.
 4. Ignore content intended for any other agent.
 5. Do not add any fields not present in the current brief or latest user message unless they are directly inferable from the target agent's schema wording.
 6. Return only the updated brief as plain text.
