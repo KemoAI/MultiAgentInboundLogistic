@@ -78,7 +78,8 @@ def supervisor_agent(state: AgentState):
                                                                             agent               = current_agent,
                                                                             relevant_fields     = AGENT_FIELD_MAP[current_agent],
                                                                             current_brief       = updated_briefs.get(current_agent, ""),
-                                                                            latest_user_message = state["messages"][-2:],
+                                                                            agent_last_request  = state["messages"][-2].content if len(state["messages"]) >= 2 else "",
+                                                                            latest_user_message = state["messages"][-1:],
             ))
         ]).content.strip()
 

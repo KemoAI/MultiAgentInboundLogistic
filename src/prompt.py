@@ -55,7 +55,7 @@ Target agent: {agent}
 Rules:
 1. Include ONLY fields relevant to {agent}.
 2. Include any direct user question ONLY if it is relevant to {agent}.
-3. Must indicate no user confirmation nor skip-optional provided in a separate line.
+3. Must indicate no user confirmation nor skip-optional provided each in a separate line.
 4. Exclude all fields, instructions, confirmations, and skip requests intended for any other agent.
 5. Do not invent field values.
 6. Keep the brief concise but explicit enough for the target agent to act reliably.
@@ -75,6 +75,18 @@ Supervisor routing summary:
 <routing_brief>
 {routing_brief}
 </routing_brief>
+
+Structure the brief in clearly separated sections using this exact format:
+
+[FIELD DATA]
+<list each field as FieldName: Value, one per line>
+
+[STATUS]
+Confirmation: <confirmed / not confirmed>
+Skip optional: <skip requested / not requested>
+
+[USER CONTEXT]
+<any other user instructions, questions, or notes; otherwise, say None>
 """
 
 supervisor_update_subagent_brief = """
@@ -82,11 +94,31 @@ You are updating the brief for exactly one downstream agent.
 Target agent: {agent}
 Rules:
 1. Preserve existing relevant facts unless the latest user message corrects or overrides them.
-2. Modify the confirmation language ONLY if the latest user message clearly confirms {agent}'s record; you must keep the no-confirmation message otherwise.
-3. Modify the skip-optional language ONLY if the latest user message clearly skips optional fields for {agent}; you must keep the no-skip message otherwise.
+2. Apply the FIRST matching case for confirmation status:
+   a. If the latest message modifies, corrects, or adds any field value
+      → set confirmation to "user has not confirmed" (data changed,
+      re-confirmation required).
+   b. If the latest message explicitly confirms {agent}'s record
+      → set confirmation to "user confirmed".
+   c. Otherwise → preserve the confirmation status from the current
+      brief unchanged, with a default of no confirmation provided.
+3. Apply the FIRST matching case for skip-optional status:
+   a. If the latest message modifies, corrects, or adds any field value
+      → set skip-optional to "user has not requested to skip"
+      (data changed, re-prompt required).
+   b. If the latest message explicitly requests to skip optional fields
+      → set skip-optional to "user requested to skip optional fields".
+   c. Otherwise → preserve the skip-optional status from the current
+      brief unchanged, with a default of no skip-optional provided.
 4. Ignore content intended for any other agent.
 5. Do not add any fields not present in the current brief or latest user message unless they are directly inferable from the target agent's schema wording.
 6. Return only the updated brief as plain text.
+
+The agent's last request to the user (provided for context only — do NOT
+treat this as user input or user intent):
+<agent_last_request>
+{agent_last_request}
+</agent_last_request>
 
 Latest user message:
 <latest_user_message>
@@ -102,6 +134,18 @@ Current brief:
 <current_brief>
 {current_brief}
 </current_brief>
+
+Structure the brief in clearly separated sections using this exact format:
+
+[FIELD DATA]
+<list each field as FieldName: Value, one per line>
+
+[STATUS]
+Confirmation: <confirmed / not confirmed>
+Skip optional: <skip requested / not requested>
+
+[USER CONTEXT]
+<any other user instructions, questions, or notes; otherwise, say None>
 """
 
 logistics_agent_tasks = """
