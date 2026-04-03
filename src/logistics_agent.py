@@ -64,7 +64,7 @@ def get_mcp_client():
     return _client
 
 # Initialize model
-model = init_chat_model(model="openai:gpt-5.1", temperature=0.0)
+model = init_chat_model(model="openai:gpt-5.4-mini", temperature=0.0)
 summarize_model = model
 
 def logistics_agent(state: LogisticsState) -> Command[Literal["logistics_tools", "ConfirmWithUser", "CommitLogisticsTransaction" , "__end__"]]:

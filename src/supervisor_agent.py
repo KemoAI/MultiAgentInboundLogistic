@@ -56,7 +56,7 @@ tools = []
 tools_by_name = {tool.name: tool for tool in tools}
 
 # Initialize model
-model = init_chat_model(model="openai:gpt-5.1", temperature=0.0)
+model = init_chat_model(model="openai:gpt-5.4-mini", temperature=0.0)
 model_with_tools = model.bind_tools(tools)
 
 # ===== WORKFLOW NODES =====
